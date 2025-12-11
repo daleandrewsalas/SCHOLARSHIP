@@ -1,0 +1,162 @@
+/* Reset */
+.logout-body, .logout-body * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Layout */
+.logout-body {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Left Side (Background + Welcome text) */
+.logout-left {
+  flex: 1;
+  position: relative;
+  background: url("../images/loginbackgroundimage.png") center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  overflow: hidden;
+}
+
+/* 🔵 Gradient overlay with blue at the bottom */
+.logout-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 6, 9, 0.46) 0%,
+    rgba(26, 81, 148, 0.46) 110%
+  );
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  z-index: 0;
+}
+
+/* make sure the text stays above the overlay */
+.logout-left h1 {
+  position: relative;
+  z-index: 1;
+}
+
+
+.logout-left h1 {
+  font-size: 80px;
+  font-weight: 800;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  transform: translateY(-200px); 
+}
+
+/* Right Side (Login Form) */
+.logout-right {
+  flex: 1;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Login Box */
+.logout-box {
+  width: 320px;
+  text-align: center;
+  position: relative;
+  top: -125px;
+}
+
+.logout-box h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.logout-box input[type="text"],
+.logout-box input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.logout-forgot {
+  font-size: 13px;
+  color: #27548A;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #27548A;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #1e3f6a;
+}
+
+/* Bottom Section */
+.logout-bottom {
+  background-color: #27548A;
+  width: 100%;
+  text-align: center;
+  padding: 100px 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  color: white;
+}
+
+.logout-bottom p {
+  font-size: 30px;
+  margin-bottom: 40px;
+}
+
+.logout-register-btn {
+  background-color: white;
+  color: #27548A;
+  width: 320px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.logout-register-btn:hover {
+  background-color: #e6e6e6;
+}
+
+.forgot-password-link {
+  display: block;
+  text-align: right;
+  margin: 20px 0 30px 0;
+  font-size: 13px;
+  color: #000;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  color: #27548A;
+  text-decoration: none;
+}

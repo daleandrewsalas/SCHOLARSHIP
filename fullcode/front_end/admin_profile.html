@@ -1,0 +1,383 @@
+<?php
+session_start();
+// Check if admin is logged in
+if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
+  // Redirect to admin login page if not logged in
+  header("Location: login_admin.php");
+  exit;
+}
+?>
+<!Doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EduGrants</title>
+  <link rel="stylesheet" href="../css/Admin_Dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../icon/logo.png" class="logo">
+        <div class="brand-text">EduGrants</div>
+      </div>
+
+      <nav class="nav">
+        <a href="admin_dashboard.html" class="nav-item"><img src="../icon/dashboard.png" class="ico"> Dashboard</a>
+
+        <a href="admin_profile.html" class="nav-item"><img src="../icon/admin.png" class="ico"> Admin Profile</a>
+        
+        <div class="nav-item dropdown">
+          <button class="dropdown-btn">
+            <img src="../icon/apply.png" class="ico"> Student Registration
+            <span class="arrow">▸</span>
+          </button>
+          
+          <div class="dropdown-content">
+            <a href="system_account.html" class="nav-item"><img src="../icon/account.png" class="ico"> System Account</a>
+            <a href="pending_accounts.html">Pending Applications</a>
+          </div>
+        </div>
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
+        <a href="login_admin.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <small>v1.0 • Prototype</small>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="top-actions">
+
+          <!-- ✅ NOTIFICATION WRAPPER -->
+           <div class="notif-wrapper">
+            <button class="notif-btn" id="notifBtn">
+              <img src="../icon/notification.png" class="notif-icon">
+              <span class="notif-badge" style="display:none;"></span>
+            </button>
+
+            <div class="notif-dropdown" id="notifDropdown" style="display:none;">
+              <div class="notif-header">Notifications</div>
+              <ul class="notif-list" id="notifList"></ul>
+            </div>
+          </div>
+
+          <div class="admin">
+            <img class="avatar" src="../icon/user.png" alt="avatar">
+            <span class="admin-name" id="adminName">Admin</span>
+          </div>
+
+        </div>
+      </header>
+    <section class="content">
+      <h2 class="page-title">ADMIN PROFILE</h2>
+
+      <div class="ap-actions-row">
+        <button class="add-btn ap-add-btn" id="openAddForm">Add Admin Profile</button>
+      </div>
+
+      <div class="search-bar-wrapper">
+    <input type="text" id="searchBox" class="search-box" placeholder="Search info...">
+        </div>
+      
+
+      <div class="accounts-container">
+      <table class="adminTable" id="adminTable">
+        <thead>
+  <tr>
+    <th>ID</th>
+    <th>Username</th>
+    <th>Fullname</th>
+    <th>Role</th>
+    <th>Action</th>
+  </tr>
+</thead>
+
+        <tbody>
+          <!-- POPULATED BY JAVASCRIPT -->
+        </tbody>
+      </table>
+    </div>
+    </section>
+    </main>
+  </div>
+
+  <script>
+
+    // ✅ REMOVE THIS — it breaks your JS
+    // document.getElementById("year").innerText = new Date().getFullYear();
+
+    // ✅ LOAD ADMIN NAME
+    function loadAdminName() {
+      fetch("../backend/get_user.php")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("adminName").innerText = data.name;
+        });
+    }
+
+    // ✅ LOAD NOTIFICATIONS
+    function loadNotifications() {
+      fetch("../backend/get_notifications.php")
+        .then(res => res.json())
+        .then(data => {
+
+          const badge = document.querySelector(".notif-badge");
+          const list = document.getElementById("notifList");
+
+          list.innerHTML = "";
+
+          if (!data.notifications || data.notifications.length === 0) {
+            badge.style.display = "none";
+            list.innerHTML = `
+              <li style="padding:20px; text-align:center; color:#777;">
+                No notifications yet
+              </li>
+            `;
+            return;
+          }
+
+          badge.style.display = "inline-block";
+          badge.innerText = data.notifications.length;
+
+          data.notifications.forEach(n => {
+            let li = document.createElement("li");
+            li.innerHTML = `
+              <strong>${n.message}</strong><br>
+              <small>${n.time}</small>
+            `;
+            list.appendChild(li);
+          });
+        });
+    }
+
+    // ✅ DROPDOWN TOGGLE
+    document.getElementById("notifBtn").addEventListener("click", () => {
+      const box = document.getElementById("notifDropdown");
+      box.style.display = box.style.display === "block" ? "none" : "block";
+    });
+
+    // ✅ AUTO REFRESH
+    setInterval(loadNotifications, 3000);
+    loadAdminName();
+    loadNotifications();
+
+    document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
+    const btn = dropdownItem.querySelector(".dropdown-btn");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            dropdownItem.classList.toggle("active");
+        });
+    }
+});
+    
+  // =============== ADMIN PROFILE LOGIC ===============
+
+  const apiBase = '../backend/api_admins.php';
+
+  const searchBox = document.getElementById('searchBox');
+  const tbody = document.querySelector('#adminTable tbody');
+
+  let editId = null;
+
+ function renderRow(a) {
+  // Combine first_name and last_name into fullname for display
+  const fullname = (a.fullname || a.first_name || '') + (a.last_name ? ' ' + a.last_name : '');
+  return `
+    <tr>
+      <td>${a.id}</td>
+      <td>${a.username}</td>
+      <td>${fullname.trim()}</td>
+      <td>${a.role || 'N/A'}</td>
+      <td style="position:relative;">
+        <button class="manage-btn" data-id="${a.id}">Manage <span class="caret">▾</span></button>
+        <div class="manage-menu" data-id="${a.id}">
+          <button class="manage-edit" data-id="${a.id}">Edit</button>
+          <button class="manage-delete" data-id="${a.id}">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+
+  async function loadAdmins(query = '') {
+    try {
+      const url = query ? `${apiBase}?q=${encodeURIComponent(query)}` : apiBase;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('Load admins failed:', res.status, data);
+        tbody.innerHTML = `<tr><td colspan="10" class="ap-empty">Error loading admins: ${data.error || data.msg || res.statusText}</td></tr>`;
+        return;
+      }
+      const list = data.admins || data;
+      tbody.innerHTML = '';
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="ap-empty">No admins found</td></tr>`;
+        return;
+      }
+      list.forEach(a => tbody.insertAdjacentHTML('beforeend', renderRow(a)));
+
+      // attach handlers for manage button & menu items
+      document.querySelectorAll('.manage-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          // close other menus
+          document.querySelectorAll('.manage-menu').forEach(m => { if (m.dataset.id !== btn.dataset.id) m.style.display = 'none'; });
+          const menu = document.querySelector(`.manage-menu[data-id="${btn.dataset.id}"]`);
+          if (!menu) return;
+          menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        };
+      });
+
+      document.querySelectorAll('.manage-delete').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.id;
+          if (!confirm('Delete this admin?')) return;
+          fetch(`${apiBase}?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(() => loadAdmins(searchBox.value));
+        };
+      });
+
+      document.querySelectorAll('.manage-edit').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const resp = await fetch(`${apiBase}?id=${encodeURIComponent(id)}`);
+          const json = await resp.json();
+          const admin = json.admin || json;
+          openAddModal(admin);
+        };
+      });
+
+      // close menus when clicking outside
+      document.addEventListener('click', (ev) => {
+        if (!ev.target.closest('.manage-btn') && !ev.target.closest('.manage-menu')) {
+          document.querySelectorAll('.manage-menu').forEach(m => m.style.display = 'none');
+        }
+      });
+
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  let addModal;
+  function initAdminUI(){
+    addModal = document.getElementById('addModal');
+    document.getElementById('openAddForm').onclick = () => openAddModal();
+    document.getElementById('closeAddForm').onclick = () => { addModal.style.display = 'none'; editId = null; };
+    document.getElementById('saveAdmin').onclick = saveAdmin;
+    searchBox.addEventListener('input', debounce(()=> loadAdmins(searchBox.value), 350));
+  }
+
+  function openAddModal(admin = null) {
+    editId = admin ? (admin.id || admin.admin_id) : null;
+    document.getElementById('modalTitle').innerText = editId ? 'Edit Admin' : 'Add Admin';
+    document.getElementById('username').value = admin ? (admin.username || '') : '';
+    document.getElementById('fullname').value = admin ? (admin.fullname || '') : '';
+    document.getElementById('role').value = admin ? (admin.role || '') : '';
+    document.getElementById('email').value = admin ? (admin.email || '') : '';
+    addModal.style.display = 'flex';
+  }
+
+  async function saveAdmin(){
+    const username = document.getElementById('username').value.trim();
+    const fullname = document.getElementById('fullname').value.trim();
+    const role = document.getElementById('role').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!username || !fullname || !role) {
+      alert('Please fill in Username, Fullname, and Role');
+      return;
+    }
+
+    const payload = {
+      username: username,
+      fullname: fullname,
+      role: role,
+      email: email || null
+    };
+
+    // Only add password if provided
+    if (password) {
+      payload.password = password;
+    }
+
+    try {
+      if (editId) {
+        payload.id = editId;
+        const resp = await fetch(apiBase, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        const result = await resp.json();
+        console.log('Edit response:', resp.status, result);
+        if (!resp.ok || (result.success !== true && result.success !== 'true')) {
+          throw new Error(result.error || result.msg || 'Failed to update admin');
+        }
+      } else {
+        const resp = await fetch(apiBase, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        const result = await resp.json();
+        console.log('Add response:', resp.status, result);
+        if (!resp.ok || (result.success !== true && result.success !== 'true')) {
+          throw new Error(result.error || result.msg || 'Failed to add admin');
+        }
+      }
+      alert(editId ? 'Admin updated successfully!' : 'Admin added successfully!');
+      addModal.style.display = 'none';
+      editId = null;
+      // Clear form
+      document.getElementById('username').value = '';
+      document.getElementById('fullname').value = '';
+      document.getElementById('role').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+      loadAdmins(searchBox.value);
+    } catch (e) { 
+      console.error('Save error:', e);
+      // Try to show more info if possible
+      alert('Error saving admin: ' + (e.message || JSON.stringify(e)));
+    }
+  }
+
+  function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+
+  // initialize after DOM ready (modal is defined after the script tag)
+  window.addEventListener('DOMContentLoaded', () => {
+    initAdminUI();
+    loadAdmins();
+  });
+  </script>
+
+    <!-- =============== ADD / EDIT ADMIN MODAL =============== -->
+    <div class="ap-modal" id="addModal">
+      <div class="ap-modal-box">
+      <h3 id="modalTitle">Add Admin</h3>
+      <input type="text" id="username" placeholder="Username">
+<input type="text" id="fullname" placeholder="Fullname">
+<select id="role">
+  <option value="">Select Role</option>
+  <option>Administrator</option>
+  <option>Super Administrator</option>
+</select>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password (leave blank to keep current)">
+
+        <div class="ap-modal-actions">
+          <button id="saveAdmin" class="ap-save">Save</button>
+          <button id="closeAddForm" class="ap-cancel">Cancel</button>
+        </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<?php
+session_start();
+// Check if admin is logged in
+if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
+  // Redirect to admin login page if not logged in
+  header("Location: login_admin.php");
+  exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EduGrants</title>
+
+  <link rel="stylesheet" href="../css/Admin_Dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../icon/logo.png" class="logo">
+        <div class="brand-text">EduGrants</div>
+      </div>
+
+      <nav class="nav">
+        <a href="admin_dashboard.html" class="nav-item"><img src="../icon/dashboard.png" class="ico"> Dashboard</a>
+         
+        <a href="admin_profile.html" class="nav-item"><img src="../icon/admin.png" class="ico"> Admin Profile</a>
+        
+        <div class="nav-item dropdown">
+          <button class="dropdown-btn">
+            <img src="../icon/apply.png" class="ico"> Student Registration
+            <span class="arrow">▸</span>
+          </button>
+          
+          <div class="dropdown-content">
+            <a href="system_account.html" class="nav-item"><img src="../icon/account.png" class="ico"> System Account</a>
+            <a href="pending_accounts.html">Pending Applications</a>
+          </div>
+        </div>
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
+        <a href="login_admin.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <small>v1.0 • Prototype</small>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="top-actions">
+          <div class="admin">
+            <img class="avatar" src="../icon/user.png" alt="avatar">
+            <span class="admin-name" id="adminName">Admin</span>
+          </div>
+        </div>
+      </header>
+
+    </main>
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+
+    // ✅ LOAD ADMIN NAME
+    function loadAdminName() {
+      fetch("../backend/get_user.php")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("adminName").innerText = data.name;
+        })
+        .catch(err => console.error("USER JSON ERROR:", err));
+    }
+
+    // ✅ INITIAL LOAD
+    loadAdminName();
+
+    // ✅ AUTO REFRESH ADMIN NAME
+    setInterval(loadAdminName, 3000);
+    document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
+    const btn = dropdownItem.querySelector(".dropdown-btn");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            dropdownItem.classList.toggle("active");
+        });
+    }
+});
+  </script>
+
+</body>
+</html>

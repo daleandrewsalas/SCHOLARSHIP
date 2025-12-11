@@ -1,0 +1,314 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins';
+    background-color: #f5f5f5;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #2c5282 0%, #1e3a5f 100%);
+    color: white;
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+    margin-bottom: 30px;
+}
+
+.logo-img {
+    width: 30px;
+    height: 30px;
+}
+
+.logo h1 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.user-profile {
+    text-align: center;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    background-color: white;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-profile h3 {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.verified-badge {
+    display: inline-block;
+    background-color: #868987;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Navigation Styles */
+.navigation {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-left-color: #4fd1c5;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Main Content Styles */
+.main-content {
+    margin-left: 250px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-bar {
+    background: linear-gradient(90deg, #3b5c87 0%, #3b5c87 100%);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-size: 14px;
+}
+
+.content-area {
+    padding: 40px;
+    flex: 1;
+    background-color: #f7fafc;
+}
+
+/* PAGE HEADER STYLES - REMOVE YUNG OLD .content-area h2 */
+.page-header {
+    text-align: center;
+    margin-bottom: 35px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.page-header h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c5282;
+    margin-bottom: 12px;
+}
+
+.page-header .subtitle {
+    font-size: 16px;
+    color: #4a5568;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* ================================
+   BEAUTIFIED RENEWAL FORM
+================================ */
+
+.renewal-wrapper {
+    background: #fff;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    margin-top: 25px;
+}
+
+.form-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2c4a68;
+    margin-bottom: 25px;
+}
+
+.renewal-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.grid-1 {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.input-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-box label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #34455c;
+}
+
+.input-box input {
+    padding: 13px 14px;
+    border-radius: 10px;
+    border: 1px solid #ccd5e0;
+    font-size: 15px;
+}
+
+.section-title {
+    margin-top: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c4a68;
+}
+
+.requirements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.requirement-card {
+    background: #f9fbfd;
+    border: 1px solid #dbe3ec;
+    padding: 18px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: 0.2s ease;
+}
+
+.requirement-card:hover {
+    box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+}
+
+/* CHECKBOX WRAPPER - ITO YUNG MAIN FIX */
+.checkbox-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox-wrapper label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #34455c;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.checkbox-wrapper label small {
+    display: block;
+    font-size: 12px;
+    color: #6c7b8c;
+    font-weight: 400;
+    margin-top: 3px;
+}
+
+.requirement-card input[type="file"] {
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #c6d2e1;
+    cursor: pointer;
+}
+
+.btn-submit {
+    background: #2c5282;
+    color: white;
+    border: none;
+    padding: 5px 30px;
+    border-radius: 5px;
+    align-self: flex-start;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.btn-submit:hover {
+    background: #1d3958;
+}
+/* Responsive */
+@media (max-width: 768px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}

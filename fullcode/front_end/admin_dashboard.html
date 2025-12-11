@@ -1,0 +1,267 @@
+<?php
+session_start();
+// Check if admin is logged in
+if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
+  // Redirect to admin login page if not logged in
+  header("Location: login_admin.php");
+  exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EduGrants</title>
+
+  <link rel="stylesheet" href="../css/Admin_Dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js for charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Ensure chart canvases are visible and sized */
+    .panel-body { position: relative; min-height: 260px; }
+    .panel-body canvas { width: 100% !important; height: 240px !important; display: block; }
+    .debug { color: #b00020; font-size: 13px; margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../icon/logo.png" class="logo">
+        <div class="brand-text">EduGrants</div>
+      </div>
+
+      <nav class="nav">
+        <a href="admin_dashboard.html" class="nav-item"><img src="../icon/dashboard.png" class="ico"> Dashboard</a>
+      
+        <a href="admin_profile.html" class="nav-item"><img src="../icon/admin.png" class="ico"> Admin Profile</a>
+        
+        <div class="nav-item dropdown">
+          <button class="dropdown-btn">
+            <img src="../icon/apply.png" class="ico"> Student Registration
+            <span class="arrow">▸</span>
+          </button>
+          
+          <div class="dropdown-content">
+          <a href="system_account.html" class="nav-item"><img src="../icon/account.png" class="ico"> System Account</a> 
+            <a href="pending_accounts.html">Pending Applications</a>
+          </div>
+        </div>
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
+        <a href="logout.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <small>v1.0 • Prototype</small>
+      </div>
+    </aside>
+
+    <main class="main">
+
+       <header class="topbar">
+        <div class="top-actions">
+          <div class="admin">
+            <img class="avatar" src="../icon/user.png" alt="avatar">
+            <span class="admin-name" id="adminName"></span>
+          </div>
+        </div>
+      </header>
+
+      <section class="content">
+        <h2 class="page-title">DASHBOARD</h2>
+
+        <div class="card-row">
+          <div class="card small card-approval">
+            <img src="../icon/approved.png" class="card-icon">
+            <div class="card-info">
+              <div class="count" id="approvedCount"></div>
+              <div class="label">Approved Registration</div>
+              <a class="view-link" href="system_account.html">View Details</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-header"><h3>Barangay Applicants</h3></div>
+                <div class="panel-body chart-bar" id="barangayChart">
+                          <canvas id="barangayCanvas"></canvas>
+                          <div id="dashboardError" class="debug" style="display:none"></div>
+                </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header"><h3>Tally Per Barangay</h3></div>
+            <div class="panel-body chart-donut" id="districtChart">
+              <canvas id="districtCanvas" width="400" height="240"></canvas>
+            </div>
+          </section>
+        </div>
+
+      </section>
+
+      <footer class="footer">
+        © <span id="year"></span> EduGrants — UI Prototype
+      </footer>
+
+    </main>
+  </div>
+
+  <script>
+    document.getElementById("year").innerText = new Date().getFullYear();
+
+    // ✅ LOAD ADMIN NAME (with error handling)
+    function loadAdminName() {
+      fetch("../backend/get_user.php")
+      .then(res => {
+        if (!res.ok) throw new Error('Status ' + res.status);
+        return res.text();
+      })
+      .then(text => {
+        let data = null;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error('Failed to parse get_user JSON. Raw response:', text);
+          const dbg = document.getElementById('dashboardError');
+          if (dbg) { dbg.style.display = 'block'; dbg.innerText = 'get_user raw response (not JSON):\n' + text.substring(0, 2000); }
+          return;
+        }
+        if (data && data.name) document.getElementById("adminName").innerText = data.name;
+      })
+      .catch(err => {
+        console.error('Failed to load admin name', err);
+        const dbg = document.getElementById('dashboardError');
+        if (dbg) { dbg.style.display = 'block'; dbg.innerText = 'Failed to load admin name: ' + err.message; }
+      });
+    }
+
+    // ✅ LOAD DASHBOARD COUNTS + CHARTS (Chart.js)
+    let barangayChartObj = null;
+    let districtChartObj = null;
+
+    function renderOrUpdateChart(canvasId, labels, values, type = 'bar', options = {}) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      if (canvasId === 'barangayCanvas') {
+        if (barangayChartObj) {
+          barangayChartObj.data.labels = labels;
+          barangayChartObj.data.datasets[0].data = values;
+          barangayChartObj.update();
+          return;
+        }
+      }
+      if (canvasId === 'districtCanvas') {
+        if (districtChartObj) {
+          districtChartObj.data.labels = labels;
+          districtChartObj.data.datasets[0].data = values;
+          districtChartObj.update();
+          return;
+        }
+      }
+
+      // build background colors - use various shades of blue
+        let backgroundColors = labels.map((_,i) => {
+          const blues = [
+            '#1e40af', // dark blue
+            '#3b82f6', // bright blue
+            '#60a5fa', // light blue
+            '#93c5fd', // lighter blue
+            '#dbeafe', // very light blue
+            '#0ea5e9', // sky blue
+            '#06b6d4', // cyan blue
+            '#0284c7'  // deep blue
+          ];
+          return blues[i % blues.length];
+        });
+
+      const cfg = {
+        type: type,
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '',
+            data: values,
+            backgroundColor: backgroundColors,
+            borderColor: '#ffffff',
+            borderWidth: 1
+          }]
+        },
+        options: Object.assign({
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }, options)
+      };
+
+      const chart = new Chart(ctx, cfg);
+      if (canvasId === 'barangayCanvas') barangayChartObj = chart;
+      if (canvasId === 'districtCanvas') districtChartObj = chart;
+    }
+
+    function loadDashboardCharts() {
+      fetch("../backend/get_dashboard_data.php")
+      .then(res => {
+        if (!res.ok) throw new Error('Status ' + res.status);
+        return res.text();
+      })
+      .then(text => {
+        const dbg = document.getElementById('dashboardError'); if (dbg) { dbg.style.display = 'none'; dbg.innerText = ''; }
+        let data = null;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error('Failed to parse dashboard JSON. Raw response:', text);
+          if (dbg) { dbg.style.display = 'block'; dbg.innerText = 'Raw response (not JSON):\n' + text.substring(0, 2000); }
+          return;
+        }
+
+        if (!data) {
+          if (dbg) { dbg.style.display = 'block'; dbg.innerText = 'Empty JSON response'; }
+          return;
+        }
+
+        // Approved count
+        document.getElementById("approvedCount").innerText = data.approved ?? 0;
+
+        // Barangay data -> bar chart
+        const barangay = data.barangay_data || [];
+        const barangayLabels = barangay.map(r => r.barangay || 'Unknown');
+        const barangayValues = barangay.map(r => parseInt(r.count || 0));
+        renderOrUpdateChart('barangayCanvas', barangayLabels, barangayValues, 'bar', { plugins: { legend: { display: false } } });
+
+        // Second panel: show Tally per Barangay as a doughnut (donut) chart using blue palette
+        // Use the same barangay data for a doughnut representation
+        renderOrUpdateChart('districtCanvas', barangayLabels, barangayValues, 'doughnut', { plugins: { legend: { display: true, position: 'bottom' } }, cutout: '50%', palette: 'blue' });
+      })
+      .catch(err => {
+        console.error('Failed to load dashboard data', err);
+        const dbg = document.getElementById('dashboardError');
+        if (dbg) { dbg.style.display = 'block'; dbg.innerText = 'Failed to load dashboard data: ' + err.message; }
+      });
+    }
+
+    // ✅ AUTO REFRESH (realtime every 3s)
+    setInterval(loadAdminName, 3000);
+    setInterval(loadDashboardCharts, 3000);
+
+    loadAdminName();
+    loadDashboardCharts();
+
+    // ✅ SIDEBAR DROPDOWN LOGIC
+    document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
+    const btn = dropdownItem.querySelector(".dropdown-btn");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            dropdownItem.classList.toggle("active");
+        });
+    }
+});
+
+  </script>
+
+</body>
+</html>

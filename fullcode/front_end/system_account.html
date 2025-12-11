@@ -1,0 +1,230 @@
+<?php
+session_start();
+// Check if admin is logged in
+if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
+  // Redirect to admin login page if not logged in
+  header("Location: login_admin.php");
+  exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EduGrants</title>
+
+  <link rel="stylesheet" href="../css/Admin_Dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../icon/logo.png" class="logo">
+        <div class="brand-text">EduGrants</div>
+      </div>
+
+      <nav class="nav">
+        <a href="admin_dashboard.html" class="nav-item"><img src="../icon/dashboard.png" class="ico"> Dashboard</a>
+
+        <a href="admin_profile.html" class="nav-item"><img src="../icon/admin.png" class="ico"> Admin Profile</a>
+        
+        <div class="nav-item dropdown">
+          <button class="dropdown-btn">
+            <img src="../icon/apply.png" class="ico"> Student Registration
+            <span class="arrow">▸</span>
+          </button>
+          
+          <div class="dropdown-content">
+            <a href="system_account.html" class="nav-item"> System Account</a>
+            <a href="pending_accounts.html">Pending Applications</a>
+          </div>
+        </div>
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
+        <a href="login_admin.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <small>v1.0 • Prototype</small>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="top-actions">
+
+          <div class="notif-wrapper">
+            <button class="notif-btn" id="notifBtn">
+              <img src="../icon/notification.png" class="notif-icon">
+              <span class="notif-badge" style="display:none;"></span>
+            </button>
+
+            <div class="notif-dropdown" id="notifDropdown" style="display:none;">
+              <div class="notif-header">Notifications</div>
+              <ul class="notif-list" id="notifList"></ul>
+            </div>
+          </div>
+
+          <div class="admin">
+            <img class="avatar" src="../icon/user.png" alt="avatar">
+            <span class="admin-name" id="adminName">Admin</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <section class="content">
+        <h2 class="page-title">ACCOUNTS</h2>
+
+        <div class="search-bar-wrapper">
+    <input type="text" id="searchBox" class="search-box" placeholder="Search info...">
+        </div>
+
+
+        <div class="accounts-container">
+          <table class="accounts-table" id="accountsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>PICTURE</th>
+                <th>LASTNAME</th>
+                <th>FIRSTNAME</th>
+                <th>MIDDLENAME</th>
+                <th>EMAIL</th>
+                <th>BARANGAY</th>
+              </tr>
+            </thead>
+            <tbody id="accountsBody">
+              <!-- POPULATED BY JAVASCRIPT -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+
+    // ✅ TOGGLE NOTIFICATION DROPDOWN
+    document.getElementById("notifBtn").addEventListener("click", function () {
+      const dropdown = document.getElementById("notifDropdown");
+      dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    });
+
+    // ✅ LOAD ADMIN NAME
+    function loadAdminName() {
+      fetch("../backend/get_user.php")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("adminName").innerText = data.name;
+        })
+        .catch(err => console.error("USER JSON ERROR:", err));
+    }
+
+    // ✅ LOAD NOTIFICATIONS
+    function loadNotifications() {
+      fetch("../backend/get_notifications.php")
+        .then(res => res.json())
+        .then(data => {
+
+          const badge = document.querySelector(".notif-badge");
+          const list = document.getElementById("notifList");
+          list.innerHTML = "";
+
+          if (!data.notifications || data.notifications.length === 0) {
+            badge.style.display = "none";
+            list.innerHTML = `<li style="padding:20px; text-align:center; color:#777;">No notifications yet</li>`;
+            return;
+          }
+
+          badge.style.display = "inline-block";
+          badge.innerText = data.notifications.length;
+
+          data.notifications.forEach(n => {
+            let li = document.createElement("li");
+            li.innerHTML = `<strong>${n.message}</strong><br><small>${n.time}</small>`;
+            list.appendChild(li);
+          });
+        })
+        .catch(err => console.error("NOTIFICATIONS JSON ERROR:", err));
+    }
+
+    // ✅ FETCH APPROVED ACCOUNTS
+    function loadApprovedAccounts() {
+      fetch("../backend/get_accounts.php")
+        .then(res => res.json())
+        .then(data => {
+
+          const tbody = document.getElementById("accountsBody");
+          tbody.innerHTML = "";
+
+          if (!data.accounts || data.accounts.length === 0) {
+            tbody.innerHTML = `
+              <tr><td colspan="7" style="text-align:center; padding:20px;">
+                No approved users found.
+              </td></tr>`;
+            return;
+          }
+
+          data.accounts.forEach(acc => {
+            // Defensive: if picture empty or null use default
+            let picFile = acc.picture ? String(acc.picture).trim() : "";
+            // Encode filename so spaces and special chars don't break the URL
+            let picSrc = picFile ? `../uploads/${encodeURIComponent(picFile)}` : '../icon/user.png';
+
+            let row = `
+              <tr>
+                <td>${acc.id}</td>
+                <td><img src="${picSrc}" style="width:40px;height:40px;border-radius:50%;" onerror="this.onerror=null;this.src='../icon/user.png'" alt="profile"></td>
+                <td>${acc.lastname}</td>
+                <td>${acc.firstname}</td>
+                <td>${acc.middlename}</td>
+                <td>${acc.email}</td>
+                <td>${acc.barangay}</td>
+              </tr>
+            `;
+            tbody.innerHTML += row;
+          });
+        })
+        .catch(err => console.error("ACCOUNTS JSON ERROR:", err));
+    }
+
+    // ✅ SEARCH FILTER
+    document.getElementById("searchBox").addEventListener("keyup", function () {
+      let filter = this.value.toLowerCase();
+      let rows = document.querySelectorAll("#accountsBody tr");
+
+      rows.forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+      });
+    });
+
+    // ✅ INITIAL LOAD
+    loadAdminName();
+    loadNotifications();
+    loadApprovedAccounts();
+
+    // ✅ AUTO REFRESH NOTIFICATIONS
+    setInterval(loadNotifications, 3000);
+    document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
+    const btn = dropdownItem.querySelector(".dropdown-btn");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            dropdownItem.classList.toggle("active");
+        });
+    }
+});
+  </script>
+
+</body>
+</html>

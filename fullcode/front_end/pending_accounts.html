@@ -1,0 +1,291 @@
+<?php
+session_start();
+?>
+<?php
+// Check if admin is logged in
+if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
+  // Redirect to admin login page if not logged in
+  header("Location: login_admin.php");
+  exit;
+}
+?>
+<!Doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EduGrants</title>
+  <link rel="stylesheet" href="../css/Admin_Dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Simple table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 14px;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 9px;
+      text-align: center;
+    }
+    th {
+      background: #1B416D;
+      color: white;
+    }
+    .add-btn {
+      float:right;
+      padding:8px 14px;
+      background:#1B416D;
+      color:white;
+      border:none;
+      border-radius:4px;
+      cursor:pointer;
+    }
+    .modal-bg {
+      display:none;
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.5);
+      justify-content:center;
+      align-items:center;
+    }
+    .modal-box {
+      background:white;
+      width:400px;
+      padding:20px;
+      border-radius:6px;
+    }
+    input, select {
+      width:100%;
+      padding:8px;
+      margin-bottom:10px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+      <div class="brand">
+        <img src="../icon/logo.png" class="logo">
+        <div class="brand-text">EduGrants</div>
+      </div>
+
+      <nav class="nav">
+        <a href="admin_dashboard.html" class="nav-item"><img src="../icon/dashboard.png" class="ico"> Dashboard</a>
+        
+        <a href="admin_profile.html" class="nav-item"><img src="../icon/admin.png" class="ico"> Admin Profile</a>
+        
+        <div class="nav-item dropdown">
+          <button class="dropdown-btn">
+            <img src="../icon/apply.png" class="ico"> Student Registration
+            <span class="arrow">▸</span>
+          </button>
+          
+           <div class="dropdown-content">
+                    <a href="system_account.html" class="nav-item"><img src="../icon/account.png" class="ico"> System Account</a>
+                    <a href="pending_accounts.html">Pending Applications</a>
+                </div>
+        </div>
+
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
+        <a href="login.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
+      </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <header class="topbar">
+      <div class="top-actions">
+        <div class="admin">
+          <img class="avatar" src="../icon/user.png" alt="avatar">
+          <span class="admin-name" id="adminName">Admin</span>
+        </div>
+      </div>
+    </header>
+    <section class="content">
+      <h2 class="page-title">PENDING ACCOUNTS</h2>
+      
+      <div class="search-bar-wrapper">
+        <input type="text" id="searchBox" class="search-box" placeholder="Search info...">
+      </div>
+      <div class="accounts-container">
+      <table class="adminTable" id="adminTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Picture</th>
+          <th>Username</th>
+          <th>Lastname</th>
+          <th>Firstname</th>
+          <th>Middlename</th>
+          <th>Birthdate</th>
+          <th>Gender</th>
+          <th>Email</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      </table>
+    </div>
+    </section>
+
+  
+
+  </main>
+</div>
+
+<!-- =============== ADD ADMIN MODAL =============== -->
+<div class="modal-bg" id="addModal">
+  <div class="modal-box">
+    <h3>Add Admin</h3>
+
+    <input type="text" id="username" placeholder="Username">
+    <input type="text" id="lastname" placeholder="Lastname">
+    <input type="text" id="firstname" placeholder="Firstname">
+    <input type="text" id="middlename" placeholder="Middlename">
+    <input type="date" id="birthdate">
+    <select id="gender">
+        <option value="">Gender</option>
+        <option>Male</option>
+        <option>Female</option>
+    </select>
+    <input type="email" id="email" placeholder="Email">
+
+    <button id="saveAdmin" style="padding:8px 14px;background:#1B416D;color:white;border:none;border-radius:4px;">Save</button>
+    <button id="closeAddForm" style="padding:8px 14px;margin-left:10px;">Cancel</button>
+  </div>
+</div>
+
+<script>
+// LOAD ADMIN NAME
+function loadAdminName() {
+  fetch("../backend/get_user.php")
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.name) {
+        document.getElementById("adminName").innerText = data.name;
+      }
+    })
+    .catch(err => console.error("Failed to load admin name", err));
+}
+
+// DROPDOWN TOGGLE
+document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
+  const btn = dropdownItem.querySelector(".dropdown-btn");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      dropdownItem.classList.toggle("active");
+    });
+  }
+});
+
+// OPEN FORM
+const openBtn = document.getElementById("openAddForm");
+if (openBtn) {
+  openBtn.onclick = () => {
+    document.getElementById("addModal").style.display = "flex";
+  };
+}
+
+// CLOSE FORM
+const closeBtn = document.getElementById("closeAddForm");
+if (closeBtn) {
+  closeBtn.onclick = () => {
+    document.getElementById("addModal").style.display = "none";
+  };
+}
+
+// FETCH PENDING APPLICANTS
+function loadPendingApplicants() {
+  fetch("../backend/get_pending_applicants.php")
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.querySelector("#adminTable tbody");
+      tbody.innerHTML = "";
+
+      if (!Array.isArray(data)) {
+        tbody.innerHTML = '<tr><td colspan="10">Error loading data</td></tr>';
+        return;
+      }
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10">No pending applicants</td></tr>';
+        return;
+      }
+
+      data.forEach(row => {
+        const username = row.email ? row.email.split('@')[0] : 'N/A';
+        const picture = 'user.png';
+        const dob = row.date_of_birth ? row.date_of_birth : 'N/A';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${row.applicant_id}</td>
+            <td><img src="../icon/${picture}" width="50" style="border-radius:4px;"></td>
+            <td>${username}</td>
+            <td>${row.lastname || 'N/A'}</td>
+            <td>${row.firstname || 'N/A'}</td>
+            <td>${row.middlename || 'N/A'}</td>
+            <td>${dob}</td>
+            <td>${row.gender || 'N/A'}</td>
+            <td>${row.email || 'N/A'}</td>
+            <td><button class="approve-btn" data-id="${row.applicant_id}" style="padding:6px 12px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;">Approve</button></td>
+          </tr>
+        `;
+      });
+
+      // Attach approve handlers
+      document.querySelectorAll('.approve-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          if (!confirm('Approve applicant #' + id + '?')) return;
+
+          fetch('../backend/approve_applicant.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'applicant_id=' + encodeURIComponent(id)
+          })
+          .then(res => res.json())
+          .then(resp => {
+            if (resp.success) {
+              alert('Applicant approved and added to system accounts');
+              loadPendingApplicants();
+            } else {
+              alert('Error: ' + (resp.message || 'Unknown error'));
+            }
+          })
+          .catch(err => { 
+            console.error(err);
+            alert('Request failed'); 
+          });
+        });
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      const tbody = document.querySelector("#adminTable tbody");
+      tbody.innerHTML = '<tr><td colspan="10">Failed to fetch data</td></tr>';
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadAdminName();
+  loadPendingApplicants();
+});
+
+// AUTO REFRESH ADMIN NAME
+setInterval(loadAdminName, 3000);
+</script>
+
+</body>
+</html>

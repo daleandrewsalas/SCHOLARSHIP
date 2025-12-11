@@ -1,0 +1,226 @@
+/* Reset */
+.register-body, .register-body * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Layout */
+.register-body {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Left Side (Background + Welcome text) */
+.register-left {
+  flex: 1;
+  position: relative;
+  background: url("images/loginbackgroundimage.png") center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  overflow: hidden;
+}
+
+/* Gradient overlay with blue at the bottom */
+.register-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 6, 9, 0.46) 0%,
+    rgba(26, 81, 148, 0.46) 110%
+  );
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  z-index: 0;
+}
+
+/* Make sure the text stays above the overlay */
+.register-left h1 {
+  position: relative;
+  z-index: 1;
+  font-size: 80px;
+  font-weight: 800;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  transform: translateY(-200px);
+}
+
+/* Right Side (Register Form) */
+.register-right {
+  flex: 1;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+/* Content wrapper for centering the form */
+.register-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 40px 0;
+}
+
+/* Register Box */
+.register-box {
+  width: 350px;
+  text-align: center;
+  position: relative;
+  top: 0;
+  padding: 20px 0;
+  margin-bottom: 30px;
+}
+
+.register-box h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #000;
+}
+
+/* Error Messages */
+.error-messages {
+  margin-bottom: 15px;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 13px;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+/* Form Labels */
+.register-box label {
+  display: block;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+  margin-top: 12px;
+}
+
+/* Input Fields */
+.register-box input[type="text"],
+.register-box input[type="email"],
+.register-box input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.register-box input[type="text"]:focus,
+.register-box input[type="email"]:focus,
+.register-box input[type="password"]:focus {
+  outline: none;
+  border-color: #27548A;
+}
+
+/* Sign Up Button */
+.register-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #27548A;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 20px;
+}
+
+.register-btn:hover {
+  background-color: #1e3f6a;
+}
+
+/* Bottom Section */
+.register-bottom {
+  background-color: #27548A;
+  width: 100%;
+  text-align: center;
+  padding: 60px 0;
+  color: white;
+  flex-shrink: 0;
+}
+
+.register-bottom p {
+  font-size: 30px;
+  margin-bottom: 40px;
+  font-weight: 400;
+}
+
+.register-login-btn {
+  background-color: white;
+  color: #27548A;
+  width: 320px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  padding: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.register-login-btn:hover {
+  background-color: #e6e6e6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .register-body {
+    flex-direction: column;
+  }
+
+  .register-left {
+    min-height: 30vh;
+  }
+
+  .register-left h1 {
+    font-size: 50px;
+    transform: translateY(0);
+  }
+
+  .register-right {
+    min-height: 70vh;
+  }
+
+  .register-box {
+    width: 90%;
+    max-width: 350px;
+    top: 0;
+  }
+
+  .register-bottom {
+    position: relative;
+    padding: 50px 20px;
+  }
+
+  .register-bottom p {
+    font-size: 24px;
+  }
+
+  .register-login-btn {
+    width: 90%;
+    max-width: 320px;
+  }
+}

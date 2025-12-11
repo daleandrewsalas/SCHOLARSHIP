@@ -1,0 +1,133 @@
+/* Reset */
+.forgot-body, .forgot-body * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Layout */
+.forgot-body {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Left Side (Background Image) */
+.forgot-left {
+  flex: 1;
+  position: relative;
+  background: url("../images/forgot.png") center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Gradient overlay */
+.forgot-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 6, 9, 0.3) 0%,
+    rgba(26, 81, 148, 0.3) 100%
+  );
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  z-index: 0;
+}
+
+/* Right Side (Form) */
+.forgot-right {
+  flex: 1;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 100vh;
+  border-radius: 50px 0 0 50px;
+}
+
+/* Forgot Password Box */
+.forgot-box {
+  width: 350px;
+  text-align: center;
+}
+
+.forgot-box h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  color: #000;
+}
+
+.forgot-box label {
+  display: block;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #000;
+}
+
+.forgot-box input[type="email"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.back-to-login {
+  display: block;
+  text-align: center;
+  margin: 15px 0 25px 0;
+  font-size: 13px;
+  color: #000;
+  text-decoration: none;
+}
+
+.back-to-login:hover {
+  color: #27548A;
+}
+
+.forgot-send-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #27548A;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.forgot-send-btn:hover {
+  background-color: #1e3f6a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .forgot-body {
+    flex-direction: column;
+  }
+
+  .forgot-left {
+    display: none;
+  }
+
+  .forgot-right {
+    border-radius: 0;
+  }
+
+  .forgot-box {
+    width: 90%;
+  }
+}
