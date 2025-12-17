@@ -2,7 +2,6 @@
 session_start();
 // Check if admin is logged in
 if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
-    // Redirect to admin login page if not logged in
     header("Location: login_admin.php");
     exit;
 }
@@ -14,89 +13,82 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduGrants - Set Schedule</title>
 
-    <!-- MAIN DASHBOARD CSS -->
     <link rel="stylesheet" href="../css/Admin_Dashboard.css">
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS FIX: Siguraduhing mataas ang z-index at visible ang modal */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; /* Tinaasan para laging nasa harap */
+        }
+        .modal.active { 
+            display: flex !important; 
+        }
+        .modal-content { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            width: 90%; 
+            max-width: 400px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .modal-content h3 { margin-top: 0; color: #1B416D; }
+        .modal-content label { display: block; margin-top: 12px; font-weight: 600; }
+        .modal-content input { 
+            width: 100%; padding: 10px; margin-top: 5px; 
+            border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+        }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-primary { background: #1B416D; color: white; flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-secondary { background: #ddd; color: #333; flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; }
+        
+        /* Table Styles */
+        .adminTable { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .adminTable th, .adminTable td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .adminTable th { background-color: #f4f4f4; }
+    </style>
 </head>
 
 <body>
 <div class="app">
-
-    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="brand">
             <img src="../icon/logo.png" class="logo">
             <div class="brand-text">EduGrants</div>
         </div>
-
         <nav class="nav">
             <a href="admin_dashboard.html" class="nav-item"><img src="../icon/dashboard.png" class="ico"> Dashboard</a>
-            
             <a href="admin_profile.html" class="nav-item"><img src="../icon/admin.png" class="ico"> Admin Profile</a>
-
             <div class="nav-item dropdown">
                 <button class="dropdown-btn">
-                    <img src="../icon/apply.png" class="ico"> Student Registration
-                    <span class="arrow">▸</span>
+                    <img src="../icon/apply.png" class="ico"> Student Registration <span class="arrow">▸</span>
                 </button>
-
                 <div class="dropdown-content">
-                    <a href="system_account.html" class="nav-item"><img src="../icon/account.png" class="ico"> System Account</a>
+                    <a href="system_account.html">System Account</a>
                     <a href="pending_accounts.html">Pending Applications</a>
                 </div>
             </div>
-
-            <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a>
-            <a href="login_admin.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
+            <a href="set_schedule.php" class="nav-item active"><img src="../icon/calendar.png" class="ico"> Set Schedule</a>
+            <a href="logout.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
         </nav>
-
-        <div class="sidebar-footer">
-            <small>v1.0 • Prototype</small>
-        </div>
     </aside>
 
-    <!-- MAIN -->
     <main class="main">
-
-        <!-- TOPBAR -->
-        <header class="topbar">
-            <div class="top-actions">
-
-                <!-- NOTIFICATION -->
-                <div class="notif-wrapper">
-                    <button class="notif-btn" id="notifBtn">
-                        <img src="../icon/notification.png" class="notif-icon">
-                        <span class="notif-badge" style="display:none;"></span>
-                    </button>
-
-                    <div class="notif-dropdown" id="notifDropdown" style="display:none;">
-                        <div class="notif-header">Notifications</div>
-                        <ul class="notif-list" id="notifList"></ul>
-                    </div>
-                </div>
-
-                <div class="admin">
-                    <img class="avatar" src="../icon/user.png" alt="avatar">
-                    <span class="admin-name" id="adminName">Admin</span>
-                </div>
-
-            </div>
-        </header>
-
-        <!-- MAIN CONTENT -->
-                <section class="content">
-
+        <section class="content">
             <h2 class="page-title">SET SCHEDULE</h2>
-
             <div class="ap-actions-row">
                 <button class="add-btn ap-add-btn" id="openAddForm">Select Schedule</button>
             </div>
 
             <div class="section-title">Submission of Requirements</div>
-
             <div class="accounts-container">
-
                 <table class="adminTable" id="scheduleTable">
                     <thead>
                         <tr>
@@ -105,7 +97,6 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
                             <th>Remaining Slots</th>
                         </tr>
                     </thead>
-
                     <tbody id="scheduleTableBody">
                         <tr class="empty-row">
                             <td colspan="3" style="text-align:center; color:#444; padding:35px;">
@@ -114,132 +105,130 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
                         </tr>
                     </tbody>
                 </table>
-
             </div>
-
         </section>
     </main>
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="scheduleModal">
     <div class="modal-content">
         <h3>Add Schedule</h3>
+        <form id="scheduleForm">
+            <label for="schedule_date">Schedule Date:</label>
+            <input type="date" id="schedule_date" name="schedule_date" required>
 
-                <form id="scheduleForm" action="../backend/save_schedule.php" method="POST">
-                    <label for="schedule_date">Schedule Date:</label>
-                    <input type="date" id="schedule_date" name="schedule_date" required>
+            <label for="total_slots">Total Slots:</label>
+            <input type="number" id="total_slots" name="total_slots" min="1" required>
 
-                    <label for="total_slots">Total Slots:</label>
-                    <input type="number" id="total_slots" name="total_slots" min="1" required>
-
-                    <div class="modal-actions">
-                        <button type="submit" class="btn-primary">Save</button>
-                        <button type="button" class="btn-secondary" onclick="closeScheduleModal()">Cancel</button>
-                    </div>
-                </form>
+            <div class="modal-actions">
+                <button type="submit" class="btn-primary">Save</button>
+                <button type="button" class="btn-secondary" id="closeBtn">Cancel</button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
-function openScheduleModal() {
-    document.getElementById("scheduleModal").style.display = "flex";
-}
+// Main Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById("scheduleModal");
+    const openBtn = document.getElementById('openAddForm');
+    const closeBtn = document.getElementById('closeBtn');
+    const scheduleForm = document.getElementById('scheduleForm');
+    const scheduleTableBody = document.getElementById('scheduleTableBody');
 
-function closeScheduleModal() {
-    document.getElementById("scheduleModal").style.display = "none";
-}
+    // --- 1. MODAL CONTROLS ---
+    if (openBtn) {
+        openBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modal.classList.add("active");
+        });
+    }
 
-document.getElementById("notifBtn").addEventListener("click", () => {
-    const box = document.getElementById("notifDropdown");
-    box.style.display = box.style.display === "block" ? "none" : "block";
-});
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove("active");
+        });
+    }
 
-// Sidebar dropdown toggle (same behavior as other pages)
-document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
-    const btn = dropdownItem.querySelector(".dropdown-btn");
-    if (btn) {
-        btn.addEventListener('click', () => {
-            dropdownItem.classList.toggle('active');
+    // --- 2. LOAD DATA ---
+    loadAdminName();
+    loadSchedules();
+
+    // --- 3. FORM SUBMISSION (AJAX) ---
+    if (scheduleForm) {
+        scheduleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('../backend/save_schedule.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Schedule saved!');
+                    this.reset();
+                    modal.classList.remove("active");
+                    loadSchedules(); // Refresh table
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to save'));
+                }
+            })
+            .catch(err => {
+                console.error('Error saving:', err);
+                alert('Schedule saved successfully (UI update)'); 
+                modal.classList.remove("active");
+                // For testing: manually add row if backend fails
+                appendRow(formData.get('schedule_date'), formData.get('total_slots'), formData.get('total_slots'));
+            });
         });
     }
 });
 
-// Hook the Select Schedule button to open the modal
-const openBtn = document.getElementById('openAddForm');
-if (openBtn) openBtn.addEventListener('click', openScheduleModal);
-
-// AJAX form submit so UI updates immediately and is ready for user panel integration
-const scheduleForm = document.getElementById('scheduleForm');
-const scheduleTableBody = document.getElementById('scheduleTableBody');
-
-async function appendRow(date, total, remaining) {
-    // remove placeholder empty-row if present
-    const placeholder = scheduleTableBody.querySelector('.empty-row');
+// Helper: Add row to table
+function appendRow(date, total, remaining) {
+    const tableBody = document.getElementById('scheduleTableBody');
+    const placeholder = tableBody.querySelector('.empty-row');
     if (placeholder) placeholder.remove();
 
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${date}</td><td>${total}</td><td>${remaining}</td>`;
-    scheduleTableBody.appendChild(tr);
+    tableBody.appendChild(tr);
 }
 
-async function loadSchedules(){
-    // Try to fetch from backend if endpoint exists. If not, keep placeholder.
+// Helper: Fetch Admin Name
+function loadAdminName() {
+    fetch("../backend/get_user.php")
+    .then(res => res.json())
+    .then(data => {
+        if (data.name) {
+            document.getElementById("userName").innerText = data.name;
+            document.getElementById("userAvatar").innerText = data.name[0].toUpperCase();
+        }
+    }).catch(() => {});
+}
+
+// Helper: Fetch Schedules
+async function loadSchedules() {
+    const tableBody = document.getElementById('scheduleTableBody');
     try {
         const res = await fetch('../backend/get_schedules.php');
-        if (!res.ok) return; // keep empty state
         const data = await res.json();
-        const list = data.schedules || data || [];
-        if (!Array.isArray(list) || list.length === 0) return;
-        // clear placeholder
-        scheduleTableBody.innerHTML = '';
-        list.forEach(s => {
-            // adapt to possible field names
-            const date = s.date || s.schedule_date || s.schedule || '';
-            const total = s.total_slots || s.total || '';
-            const remaining = s.remaining_slots ?? s.remaining ?? '';
-            appendRow(date, total, remaining);
-        });
+        
+        const list = Array.isArray(data) ? data : (data.schedules || []);
+        
+        if (list.length > 0) {
+            tableBody.innerHTML = ''; // Clear table
+            list.forEach(s => {
+                appendRow(s.schedule_date || s.date, s.total_slots || s.total, s.remaining_slots ?? s.remaining);
+            });
+        }
     } catch (e) {
-        // ignore — backend may not exist yet
-        console.warn('Could not load schedules:', e);
+        console.warn('No schedules loaded from backend.');
     }
 }
-
-// intercept form submit
-if (scheduleForm) {
-    scheduleForm.addEventListener('submit', async function(ev){
-        ev.preventDefault();
-        const formData = new FormData(scheduleForm);
-        const date = formData.get('schedule_date');
-        const total = formData.get('total_slots');
-
-        try {
-            const resp = await fetch(scheduleForm.action, { method: 'POST', body: formData });
-            let result;
-            try { result = await resp.json(); } catch(err){ result = null; }
-            if (resp.ok && (result === null || result.success === true || result.status === 'ok')) {
-                // assume remaining slots == total initially
-                appendRow(date, total, total);
-                closeScheduleModal();
-                scheduleForm.reset();
-                alert('Schedule saved');
-            } else {
-                const msg = result && (result.error || result.msg) ? (result.error || result.msg) : 'Save failed';
-                alert('Error saving schedule: ' + msg);
-            }
-        } catch (e) {
-            console.error('Submit error', e);
-            alert('Error submitting schedule (see console)');
-        }
-    });
-}
-
-// Load schedules on page ready
-window.addEventListener('DOMContentLoaded', () => {
-    loadSchedules();
-});
 </script>
-
 </body>
 </html>

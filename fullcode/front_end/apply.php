@@ -1,10 +1,26 @@
-
 <?php
 // Include DB Connection
-include("database.php");
+session_start();
+require("../backend/db_connect.php");
 
 $success_message = "";
 $current_section = isset($_GET['section']) ? $_GET['section'] : "personal-info";
+
+// Get or create applicant_id from session
+if (!isset($_SESSION['applicant_id'])) {
+    // Create a new applicant record
+    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+    $stmt = $conn->prepare("INSERT INTO applicants (user_id, status) VALUES (?, ?)");
+    if ($stmt) {
+        $stmt->bind_param("is", $user_id, $status);
+        $status = 'pending';
+        if ($stmt->execute()) {
+            $_SESSION['applicant_id'] = $conn->insert_id;
+        }
+    }
+}
+
+$applicant_id = $_SESSION['applicant_id'] ?? null;
 
 // Retrieve existing data
 $personal_data = null;
@@ -12,189 +28,193 @@ $residency_data = null;
 $family_data = null;
 $appointment_data = null;
 
-try {
-    // Get latest personal information
-    $stmt = $pdo->query("SELECT * FROM personal_information ORDER BY id DESC LIMIT 1");
-    $personal_data = $stmt->fetch();
+// Fetch data using MySQLi
+$personal_data = null;
+$residency_data = null;
+$family_data = null;
+$appointment_data = null;
+
+if ($applicant_id) {
+    // Get personal information for this applicant
+    $stmt = $conn->prepare("SELECT * FROM personal_information WHERE applicant_id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('i', $applicant_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $personal_data = $result->fetch_assoc();
+    }
     
-    // Get latest residency information
-    $stmt = $pdo->query("SELECT * FROM residency_information ORDER BY id DESC LIMIT 1");
-    $residency_data = $stmt->fetch();
+    // Get residency information for this applicant
+    $stmt = $conn->prepare("SELECT * FROM residency_information WHERE applicant_id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('i', $applicant_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $residency_data = $result->fetch_assoc();
+    }
     
-    // Get latest family background
-    $stmt = $pdo->query("SELECT * FROM family_background ORDER BY id DESC LIMIT 1");
-    $family_data = $stmt->fetch();
+    // Get family background for this applicant
+    $stmt = $conn->prepare("SELECT * FROM family_background WHERE applicant_id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('i', $applicant_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $family_data = $result->fetch_assoc();
+    }
     
-    // Get latest appointment
-    $stmt = $pdo->query("SELECT * FROM appointments ORDER BY id DESC LIMIT 1");
-    $appointment_data = $stmt->fetch();
-} catch(PDOException $e) {
-    // Tables might not exist yet
+    // Get appointment for this applicant
+    $stmt = $conn->prepare("SELECT * FROM appointments WHERE applicant_id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('i', $applicant_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $appointment_data = $result->fetch_assoc();
+    }
 }
 
 // Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Personal Information Section
-    if (!isset($_POST['step'])) {
-        $lastname = $_POST["lastname"];
-        $firstname = $_POST["firstname"];
-        $middlename = $_POST["middlename"];
-        $gender = $_POST["gender"];
-        $civil_status = $_POST["civil_status"];
-        $date_of_birth = $_POST["date_of_birth"];
-        $course = $_POST["course"];
-        $gpa = $_POST["gpa"];
-        $school_name = $_POST["school_name"];
-        $skills = $_POST["skills"];
-        $talent = $_POST["talent"];
+    if (!isset($_POST['step']) || $_POST['step'] === 'personal-info') {
+        $lastname = $_POST["lastname"] ?? '';
+        $firstname = $_POST["firstname"] ?? '';
+        $middlename = $_POST["middlename"] ?? '';
+        $gender = $_POST["gender"] ?? '';
+        $civil_status = $_POST["civil_status"] ?? '';
+        $date_of_birth = $_POST["date_of_birth"] ?? '';
+        $course = $_POST["course"] ?? '';
+        $gpa = $_POST["gpa"] ?? '';
+        $school_name = $_POST["school_name"] ?? '';
+        $skills = $_POST["skills"] ?? '';
+        $talent = $_POST["talent"] ?? '';
 
         // Check if record exists
         if ($personal_data) {
             // Update existing record
-            $sql = "UPDATE personal_information SET 
+            $stmt = $conn->prepare("UPDATE personal_information SET 
                     lastname=?, firstname=?, middlename=?, gender=?, civil_status=?, 
                     date_of_birth=?, course=?, gpa=?, school_name=?, skills=?, talent=?
-                    WHERE id=?";
-            $stmt = $pdo->prepare($sql);
-            $result = $stmt->execute([
-                $lastname, $firstname, $middlename, $gender, $civil_status,
-                $date_of_birth, $course, $gpa, $school_name, $skills, $talent, $personal_data['id']
-            ]);
+                    WHERE applicant_id=?");
+            if ($stmt) {
+                $stmt->bind_param("ssssssssdssi", $lastname, $firstname, $middlename, $gender, $civil_status,
+                    $date_of_birth, $course, $gpa, $school_name, $skills, $talent, $applicant_id);
+                $stmt->execute();
+            }
         } else {
             // Insert new record
-            $sql = "INSERT INTO personal_information 
-                    (lastname, firstname, middlename, gender, civil_status, date_of_birth, course, gpa, school_name, skills, talent)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $result = $stmt->execute([
-                $lastname, $firstname, $middlename, $gender, $civil_status,
-                $date_of_birth, $course, $gpa, $school_name, $skills, $talent
-            ]);
+            $stmt = $conn->prepare("INSERT INTO personal_information 
+                    (applicant_id, lastname, firstname, middlename, gender, civil_status, date_of_birth, course, gpa, school_name, skills, talent)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param("isssssssdsss", $applicant_id, $lastname, $firstname, $middlename, $gender, $civil_status,
+                    $date_of_birth, $course, $gpa, $school_name, $skills, $talent);
+                $stmt->execute();
+            }
         }
 
-        if ($result) {
-            // $success_message = "Personal Information Saved Successfully!";
-            header("Location: apply.php?section=residency");
-            exit();
-        } else {
-            // $success_message = "Error saving data.";
-        }
+        header("Location: apply.php?section=residency");
+        exit();
     }
     
     // Residency Section
     if (isset($_POST['step']) && $_POST['step'] === 'residency') {
-        $permanent_address = $_POST["permanent_address"];
-        $residency_duration = $_POST["residency_duration"];
-        $voter_father = $_POST["father_voter"];
-        $voter_mother = $_POST["mother_voter"];
-        $voter_applicant = $_POST["applicant_voter"];
-        $voter_guardian = isset($_POST["guardian_voter"]) ? $_POST["guardian_voter"] : '';
-        $guardian_name = $_POST["guardian_name"];
-        $guardian_relationship = $_POST["guardian_relationship"];
-        $guardian_address = $_POST["guardian_address"];
-        $guardian_contact = $_POST["guardian_contact"];
+        $permanent_address = $_POST["permanent_address"] ?? '';
+        $residency_duration = $_POST["residency_duration"] ?? '';
+        $voter_father = $_POST["father_voter"] ?? '';
+        $voter_mother = $_POST["mother_voter"] ?? '';
+        $voter_applicant = $_POST["applicant_voter"] ?? '';
+        $voter_guardian = $_POST["guardian_voter"] ?? '';
+        $guardian_name = $_POST["guardian_name"] ?? '';
+        $guardian_relationship = $_POST["guardian_relationship"] ?? '';
+        $guardian_address = $_POST["guardian_address"] ?? '';
+        $guardian_contact = $_POST["guardian_contact"] ?? '';
 
-        // Check if record exists
         if ($residency_data) {
-            // Update existing record
-            $sql = "UPDATE residency_information SET 
+            $stmt = $conn->prepare("UPDATE residency_information SET 
                     permanent_address=?, residency_duration=?, voter_father=?, voter_mother=?, 
                     voter_applicant=?, voter_guardian=?, guardian_name=?, guardian_relationship=?, 
                     guardian_address=?, guardian_contact=?
-                    WHERE id=?";
-            $stmt = $pdo->prepare($sql);
-            $result = $stmt->execute([
-                $permanent_address, $residency_duration, $voter_father, $voter_mother, $voter_applicant, 
-                $voter_guardian, $guardian_name, $guardian_relationship, $guardian_address, $guardian_contact,
-                $residency_data['id']
-            ]);
+                    WHERE applicant_id=?");
+            if ($stmt) {
+                $stmt->bind_param("ssssssssssi", $permanent_address, $residency_duration, $voter_father, $voter_mother, $voter_applicant, 
+                    $voter_guardian, $guardian_name, $guardian_relationship, $guardian_address, $guardian_contact, $applicant_id);
+                $stmt->execute();
+            }
         } else {
-            // Insert new record
-            $sql = "INSERT INTO residency_information 
-                    (permanent_address, residency_duration, voter_father, voter_mother, voter_applicant, voter_guardian, 
+            $stmt = $conn->prepare("INSERT INTO residency_information 
+                    (applicant_id, permanent_address, residency_duration, voter_father, voter_mother, voter_applicant, voter_guardian, 
                      guardian_name, guardian_relationship, guardian_address, guardian_contact)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $result = $stmt->execute([
-                $permanent_address, $residency_duration, $voter_father, $voter_mother, $voter_applicant, 
-                $voter_guardian, $guardian_name, $guardian_relationship, $guardian_address, $guardian_contact
-            ]);
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param("issssssssss", $applicant_id, $permanent_address, $residency_duration, $voter_father, $voter_mother, $voter_applicant, 
+                    $voter_guardian, $guardian_name, $guardian_relationship, $guardian_address, $guardian_contact);
+                $stmt->execute();
+            }
         }
 
-        if ($result) {
-            // $success_message = "Residency Information Saved Successfully!";
-            header("Location: apply.php?section=family");
-            exit();
-        } else {
-            // $success_message = "Error saving residency data.";
-        }
+        header("Location: apply.php?section=family");
+        exit();
     }
     
     // Family Background Section
     if (isset($_POST['step']) && $_POST['step'] === 'family') {
-        $father_name = $_POST["father_name"];
-        $father_suffix = $_POST["father_suffix"];
-        $father_address = $_POST["father_address"];
-        $father_age = $_POST["father_age"];
-        $father_contact = $_POST["father_contact"];
-        $father_citizenship = $_POST["father_citizenship"];
-        $father_occupation = $_POST["father_occupation"];
-        $father_religion = $_POST["father_religion"];
-        $father_dob = $_POST["father_dob"];
-        $father_income = $_POST["father_income"];
+        $father_name = $_POST["father_name"] ?? '';
+        $father_suffix = $_POST["father_suffix"] ?? '';
+        $father_address = $_POST["father_address"] ?? '';
+        $father_age = $_POST["father_age"] ?? '';
+        $father_contact = $_POST["father_contact"] ?? '';
+        $father_citizenship = $_POST["father_citizenship"] ?? '';
+        $father_occupation = $_POST["father_occupation"] ?? '';
+        $father_religion = $_POST["father_religion"] ?? '';
+        $father_dob = $_POST["father_dob"] ?? '';
+        $father_income = $_POST["father_income"] ?? '';
         
-        $mother_name = $_POST["mother_name"];
-        $mother_address = $_POST["mother_address"];
-        $mother_age = $_POST["mother_age"];
-        $mother_contact = $_POST["mother_contact"];
-        $mother_citizenship = $_POST["mother_citizenship"];
-        $mother_occupation = $_POST["mother_occupation"];
-        $mother_religion = $_POST["mother_religion"];
-        $mother_dob = $_POST["mother_dob"];
-        $mother_income = $_POST["mother_income"];
+        $mother_name = $_POST["mother_name"] ?? '';
+        $mother_address = $_POST["mother_address"] ?? '';
+        $mother_age = $_POST["mother_age"] ?? '';
+        $mother_contact = $_POST["mother_contact"] ?? '';
+        $mother_citizenship = $_POST["mother_citizenship"] ?? '';
+        $mother_occupation = $_POST["mother_occupation"] ?? '';
+        $mother_religion = $_POST["mother_religion"] ?? '';
+        $mother_dob = $_POST["mother_dob"] ?? '';
+        $mother_income = $_POST["mother_income"] ?? '';
 
-        // Check if record exists
         if ($family_data) {
-            // Update existing record
-            $sql = "UPDATE family_background SET 
+            $stmt = $conn->prepare("UPDATE family_background SET 
                     father_name=?, father_suffix=?, father_address=?, father_age=?, father_contact=?,
                     father_citizenship=?, father_occupation=?, father_religion=?, father_dob=?, father_income=?,
                     mother_name=?, mother_address=?, mother_age=?, mother_contact=?, mother_citizenship=?,
                     mother_occupation=?, mother_religion=?, mother_dob=?, mother_income=?
-                    WHERE id=?";
-            $stmt = $pdo->prepare($sql);
-            $result = $stmt->execute([
-                $father_name, $father_suffix, $father_address, $father_age, $father_contact,
-                $father_citizenship, $father_occupation, $father_religion, $father_dob, $father_income,
-                $mother_name, $mother_address, $mother_age, $mother_contact, $mother_citizenship,
-                $mother_occupation, $mother_religion, $mother_dob, $mother_income,
-                $family_data['id']
-            ]);
+                    WHERE applicant_id=?");
+            if ($stmt) {
+                $stmt->bind_param("sssssssssssssssssssi",
+                    $father_name, $father_suffix, $father_address, $father_age, $father_contact,
+                    $father_citizenship, $father_occupation, $father_religion, $father_dob, $father_income,
+                    $mother_name, $mother_address, $mother_age, $mother_contact, $mother_citizenship,
+                    $mother_occupation, $mother_religion, $mother_dob, $mother_income,
+                    $applicant_id);
+                $stmt->execute();
+            }
         } else {
-            // Insert new record
-            $sql = "INSERT INTO family_background 
-                    (father_name, father_suffix, father_address, father_age, father_contact, father_citizenship,
+            $stmt = $conn->prepare("INSERT INTO family_background 
+                    (applicant_id, father_name, father_suffix, father_address, father_age, father_contact, father_citizenship,
                      father_occupation, father_religion, father_dob, father_income,
                      mother_name, mother_address, mother_age, mother_contact, mother_citizenship,
                      mother_occupation, mother_religion, mother_dob, mother_income)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $result = $stmt->execute([
-                $father_name, $father_suffix, $father_address, $father_age, $father_contact,
-                $father_citizenship, $father_occupation, $father_religion, $father_dob, $father_income,
-                $mother_name, $mother_address, $mother_age, $mother_contact, $mother_citizenship,
-                $mother_occupation, $mother_religion, $mother_dob, $mother_income
-            ]);
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param("isssssssssssssssssss",
+                    $applicant_id, $father_name, $father_suffix, $father_address, $father_age, $father_contact,
+                    $father_citizenship, $father_occupation, $father_religion, $father_dob, $father_income,
+                    $mother_name, $mother_address, $mother_age, $mother_contact, $mother_citizenship,
+                    $mother_occupation, $mother_religion, $mother_dob, $mother_income);
+                $stmt->execute();
+            }
         }
 
-        if ($result) {
-            // $success_message = "Family Background Saved Successfully!";
-            header("Location: apply.php?section=fileupload");
-            exit();
-        } else {
-            // $success_message = "Error saving family background data.";
-        }
+        header("Location: apply.php?section=fileupload");
+        exit();
     }
     
     // File Upload Section
@@ -208,38 +228,36 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Appointment Section
     if (isset($_POST['step']) && $_POST['step'] === 'appointment') {
         $appointment_date = $_POST["appointment_date"];
-        $total_slots = $_POST["total_slots"];
-        $remaining_slots = $_POST["remaining_slots"];
+        $appointment_time = $_POST["appointment_time"] ?? null;
 
         // Check if record exists
         if ($appointment_data) {
-            // Update existing record
-            $sql = "UPDATE appointments SET 
-                    appointment_date=?, total_slots=?, remaining_slots=?
-                    WHERE id=?";
-            $stmt = $pdo->prepare($sql);
-            $result = $stmt->execute([
-                $appointment_date, $total_slots, $remaining_slots,
-                $appointment_data['id']
-            ]);
+            $stmt = $conn->prepare("UPDATE appointments SET 
+                    appointment_date=?, appointment_time=?
+                    WHERE applicant_id=?");
+            if ($stmt) {
+                $stmt->bind_param("ssi", $appointment_date, $appointment_time, $applicant_id);
+                $stmt->execute();
+            }
         } else {
-            // Insert new record
-            $sql = "INSERT INTO appointments 
-                    (appointment_date, total_slots, remaining_slots)
-                    VALUES (?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $result = $stmt->execute([
-                $appointment_date, $total_slots, $remaining_slots
-            ]);
+            $stmt = $conn->prepare("INSERT INTO appointments 
+                    (applicant_id, appointment_date, appointment_time)
+                    VALUES (?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param("iss", $applicant_id, $appointment_date, $appointment_time);
+                $stmt->execute();
+                
+                // Decrement remaining slots in schedules table
+                $updateSlots = $conn->prepare("UPDATE schedules SET remaining_slots = remaining_slots - 1 WHERE schedule_date = ? AND remaining_slots > 0");
+                if ($updateSlots) {
+                    $updateSlots->bind_param("s", $appointment_date);
+                    $updateSlots->execute();
+                }
+            }
         }
 
-        if ($result) {
-            // $success_message = "Appointment Scheduled Successfully!";
-            header("Location: apply.php?section=finish");
-            exit();
-        } else {
-            // $success_message = "Error saving appointment data.";
-        }
+        header("Location: apply.php?section=finish");
+        exit();
     }
 }
 ?>
@@ -250,56 +268,69 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduGrants - Apply Scholarship</title>
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="apply.css">
+    <link rel="stylesheet" href="../css/Admin_Dashboard.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/apply.css">
 </head>
 <body>
+
+<?php
+    // Check if user is logged in
+    if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
+        header("Location: login.php");
+        exit;
+    }
+    
+    $firstname = $_SESSION['firstname'] ?? 'User';
+    $lastname = $_SESSION['lastname'] ?? '';
+    $email = $_SESSION['email'] ?? '';
+    $role = $_SESSION['role'] ?? 'Applicant';
+    $fullname = trim($firstname . ' ' . $lastname);
+    ?>
     <div class="container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
-                <img src="images/graducation.png" alt="EduGrants Logo" width="30" height="30">
+                <img src="../icon/graducation.png" alt="EduGrants Logo" width="30" height="30">
                 <h1>EduGrants</h1>
             </div>
             
-            <div class="user-profile">
-                <div class="avatar">
-                    <img src="images/user.png" alt="User Avatar">
-                </div>
-                <h3>John Cruz Galang</h3>
-                <span class="verified-badge">Unverified Account</span>
-            </div>
             
             <nav class="navigation">
                 <a href="dashboard.php" class="nav-item">
-                    <img src="images/dashboard.png" alt="Dashboard" width="20" height="20">
+                    <img src="../icon/dashboard.png" alt="Dashboard" width="20" height="20">
                     Dashboard
                 </a>
-                <a href="apply.php" class="nav-item active">
-                    <img src="images/apply.png" alt="Apply Scholarship" width="20" height="20">
+                <a href="apply.php" class="nav-item">
+                    <img src="../icon/apply.png" alt="Apply Scholarship" width="20" height="20">
                     Apply Scholarship
                 </a>
                 <a href="renewal.php" class="nav-item">
-                    <img src="images/renewal.png" alt="Renewal" width="20" height="20">
+                    <img src="../icon/renewal.png" alt="Renewal" width="20" height="20">
                     Renewal
                 </a>
-                <a href="logout.php" class="nav-item">
-                    <img src="images/logout.png" alt="Log out" width="20" height="20">
+                <a href="login.php" class="nav-item">
+                    <img src="../icon/logout.png" alt="Log out" width="20" height="20">
                     Log out
                 </a>
             </nav>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar" id="userAvatar"><?php echo strtoupper(substr($firstname,0,1)); ?></div>
+                    <div class="user-info">
+                        <div class="user-name" id="userFullname"><?php echo htmlspecialchars($fullname); ?></div>
+                        <div class="user-role"><?php echo htmlspecialchars($role); ?></div>
+                    </div>
+                </div>
+            </div>
         </aside>
         
         <!-- Main Content -->
         <main class="main-content">
-            <header class="top-bar">
-                <div class="user-info">
-                    <img src="images/notification.png" alt="Notification" width="20" height="20">
-                    <span>John Galang</span>
-                </div>
-            </header>
-
-            <div class="content-area">
+          
+            <div class="content-area apply-page">
                 <h3>DASHBOARD / APPLY SCHOLARSHIP</h3>
                 
                 <?php /* SUCCESS MESSAGE REMOVED
@@ -311,7 +342,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 */ ?>
                 
                 <!-- Steps -->
-                <!-- Steps -->
                 <?php
                 // Define step order
                 $steps_order = ['personal-info', 'residency', 'family', 'fileupload', 'appointment', 'finish'];
@@ -321,68 +351,63 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="step <?php echo ($current_index >= 0) ? 'active' : ''; ?>" onclick="showSection('personal-info')">
                         <div class="step-icon">
                             <svg viewBox="0 0 24 24">
-                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                <path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
                         </div>
                         <div class="step-text">Personal Information</div>
                     </div>
                     
                     <div class="step <?php echo ($current_index >= 1) ? 'active' : ''; ?>" onclick="showSection('residency')">
-                        
-                    <div class="step-icon">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                        </svg>
-                    </div>
-                    <div class="step-text">Residency</div>
-                </div>
-                
-                <div class="step <?php echo ($current_index >= 2) ? 'active' : ''; ?>" onclick="showSection('family')">
-                    <div class="step-icon">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                        </svg>
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                            </svg>
+                        </div>
+                        <div class="step-text">Residency</div>
                     </div>
                     
-                    <div class="step-text">Family Background</div>
-                </div>
-                
-                <div class="step <?php echo ($current_index >= 3) ? 'active' : ''; ?>" onclick="showSection('fileupload')">
-                    <div class="step-icon">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
-                        </svg>
+                    <div class="step <?php echo ($current_index >= 2) ? 'active' : ''; ?>" onclick="showSection('family')">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                            </svg>
+                        </div>
+                        <div class="step-text">Family Background</div>
                     </div>
                     
-                    <div class="step-text">File Upload</div>
-                </div>
-                
-                <div class="step <?php echo ($current_index >= 4) ? 'active' : ''; ?>" onclick="showSection('appointment')">
-                    <div class="step-icon">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
-                        </svg>
+                    <div class="step <?php echo ($current_index >= 3) ? 'active' : ''; ?>" onclick="showSection('fileupload')">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                            </svg>
+                        </div>
+                        <div class="step-text">File Upload</div>
                     </div>
-                    <div class="step-text">Appointment</div>
-                </div>
+                    
+                    <div class="step <?php echo ($current_index >= 4) ? 'active' : ''; ?>" onclick="showSection('appointment')">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
+                            </svg>
+                        </div>
+                        <div class="step-text">Appointment</div>
+                    </div>
 
-                <div class="step <?php echo ($current_index >= 5) ? 'active' : ''; ?>" onclick="showSection('finish')">
-
-                <div class="step-icon">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
-                    </svg>
-
-                </div>
-                
-                <div class="step-text">Finish</div>
-            </div>
-        </div> 
+                    <div class="step <?php echo ($current_index >= 5) ? 'active' : ''; ?>" onclick="showSection('finish')">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                            </svg>
+                        </div>
+                        <div class="step-text">Finish</div>
+                    </div>
+                </div> 
                 <!-- Personal Information Form -->
-                <div id="personal-info" class="form-section <?php echo ($current_section === 'personal-info') ? 'active' : ''; ?>">
+                <div id="personal-info" class="form-section <?php echo ($current_section === 'personal-info') ? 'active' : ''; ?>" style="<?php echo ($current_section === 'personal-info') ? 'display: block !important;' : 'display: none;'; ?>">
                     <h2 class="section-title">PERSONAL INFORMATION:</h2>
                     
                     <form class="scholarship-form" method="POST" action="apply.php">
+                        <input type="hidden" name="step" value="personal-info">
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Lastname</label>
@@ -451,21 +476,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                    value="<?php echo $personal_data ? htmlspecialchars($personal_data['school_name']) : ''; ?>" required>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Skills (optional)</label>
-                                <input type="text" name="skills" 
-                                       value="<?php echo $personal_data ? htmlspecialchars($personal_data['skills']) : ''; ?>">
-                            </div>
-                            <div class="form-group">
-                                <label>Talent (optional)</label>
-                                <input type="text" name="talent" 
-                                       value="<?php echo $personal_data ? htmlspecialchars($personal_data['talent']) : ''; ?>">
-                            </div>
-                        </div>
-
                         <div class="form-actions">
-                            <button type="submit" class="btn-next">Submit</button>
+                            <button type="submit" class="btn-next">Next</button>
                         </div>
                     </form>
                 </div>
@@ -789,24 +801,44 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <div class="appointment-row">
                             <div class="appointment-col">
                                 <label>Please select a date</label>
-                                <select name="appointment_date" required>
+                                <select name="appointment_date" id="appointmentDate" required onchange="updateSlotInfo()">
                                     <option value="">Available Dates</option>
-                                    <option value="2024-12-15" <?php echo ($appointment_data && $appointment_data['appointment_date'] === '2024-12-15') ? 'selected' : ''; ?>>December 15, 2024</option>
-                                    <option value="2024-12-20" <?php echo ($appointment_data && $appointment_data['appointment_date'] === '2024-12-20') ? 'selected' : ''; ?>>December 20, 2024</option>
-                                    <option value="2024-12-25" <?php echo ($appointment_data && $appointment_data['appointment_date'] === '2024-12-25') ? 'selected' : ''; ?>>December 25, 2024</option>
+                                    <?php
+                                    // Fetch available schedules from database
+                                    $schedules = [];
+                                    $stmt = $conn->prepare("SELECT schedule_id, schedule_date, total_slots, remaining_slots FROM schedules WHERE is_active = 1 ORDER BY schedule_date ASC");
+                                    if ($stmt) {
+                                        $stmt->execute();
+                                        $result = $stmt->get_result();
+                                        while ($row = $result->fetch_assoc()) {
+                                            $schedules[] = $row;
+                                        }
+                                    }
+                                    
+                                    if (count($schedules) === 0) {
+                                        echo "<option value=''>No schedules available</option>";
+                                    } else {
+                                        foreach ($schedules as $schedule) {
+                                            $date = new DateTime($schedule['schedule_date']);
+                                            $formatted_date = $date->format('F j, Y');
+                                            $selected = ($appointment_data && $appointment_data['appointment_date'] === $schedule['schedule_date']) ? 'selected' : '';
+                                            echo "<option value='{$schedule['schedule_date']}' data-total='{$schedule['total_slots']}' data-remaining='{$schedule['remaining_slots']}' {$selected}>{$formatted_date}</option>";
+                                        }
+                                    }
+                                    ?>
                                 </select>
                             </div>
                             
                             <div class="appointment-col">
                                 <label>Total Slots:</label>
-                                <input type="text" name="total_slots" readonly 
-                                       value="<?php echo $appointment_data ? htmlspecialchars($appointment_data['total_slots']) : '0'; ?>">
+                                <input type="text" id="totalSlots" readonly 
+                                       value="<?php echo ($appointment_data && isset($schedules)) ? ($schedules[0]['total_slots'] ?? '0') : '0'; ?>">
                             </div>
                             
                             <div class="appointment-col">
                                 <label>Remaining Slots:</label>
-                                <input type="text" name="remaining_slots" readonly 
-                                       value="<?php echo $appointment_data ? htmlspecialchars($appointment_data['remaining_slots']) : '0'; ?>">
+                                <input type="text" id="remainingSlots" readonly 
+                                       value="<?php echo ($appointment_data && isset($schedules)) ? ($schedules[0]['remaining_slots'] ?? '0') : '0'; ?>">
                             </div>
                         </div>
                         
@@ -853,8 +885,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <div class="form-actions">
                             <button type="button" class="btn-prev" onclick="showSection('appointment')">Previous</button>
 
-                            <!-- Submit button → triggers success -->
-                            <button type="button" class="btn-submit" onclick="showSuccess()">Submit Application</button>
+                            <!-- Submit button → posts to backend then triggers success -->
+                            <button type="button" class="btn-submit" onclick="submitApplication()">Submit Application</button>
                         </div>
                     </div>
 
@@ -907,8 +939,40 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // ========== UPDATE SLOT INFO ON DATE CHANGE ==========
+        function updateSlotInfo() {
+            const selectElement = document.getElementById('appointmentDate');
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            
+            const totalSlots = selectedOption.getAttribute('data-total') || '0';
+            const remainingSlots = selectedOption.getAttribute('data-remaining') || '0';
+            
+            document.getElementById('totalSlots').value = totalSlots;
+            document.getElementById('remainingSlots').value = remainingSlots;
+        }
+
+        // ========== SUBMIT APPLICATION (mark pending) ==========
+        function submitApplication() {
+            fetch('../backend/submit_application.php', { method: 'POST', credentials: 'same-origin' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.status === 'success') {
+                        // show success screen after backend confirms
+                        showSuccess();
+                    } else {
+                        alert('Failed to submit application: ' + (data.error || data.message || 'Unknown'));
+                    }
+                })
+                .catch(err => {
+                    alert('Request failed');
+                });
+        }
+
         // File upload display filename
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize slot info on page load
+            updateSlotInfo();
+            
             const fileInputs = document.querySelectorAll('input[type="file"]');
             
             fileInputs.forEach(input => {
@@ -922,6 +986,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             });
         });
     </script>  
-
+</main>
 </body>
 </html>
+<script>
+// Update slot info when a schedule is selected
+function updateSlotInfo(){
+    var sel = document.getElementById('appointmentDate');
+    if(!sel) return;
+    var opt = sel.options[sel.selectedIndex];
+    if(!opt) return;
+    var total = opt.getAttribute('data-total') || '0';
+    var remaining = opt.getAttribute('data-remaining') || '0';
+    var totalEl = document.getElementById('totalSlots');
+    var remEl = document.getElementById('remainingSlots');
+    if(totalEl) totalEl.value = total;
+    if(remEl) remEl.value = remaining;
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    // initialize fields from currently selected option
+    updateSlotInfo();
+    // ensure onchange is wired (in case HTML changed)
+    var sel = document.getElementById('appointmentDate');
+    if(sel) sel.addEventListener('change', updateSlotInfo);
+});
+</script>

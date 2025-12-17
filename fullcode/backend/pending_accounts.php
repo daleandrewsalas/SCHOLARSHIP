@@ -33,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     if (!$action || !$id) js(['status'=>'error','error'=>'Invalid parameters']);
 
     if ($action === 'reject'){
-        $del = $conn->prepare("DELETE FROM applicants WHERE id = ?");
+        // applicants table uses applicant_id as primary key
+        $del = $conn->prepare("DELETE FROM applicants WHERE applicant_id = ?");
         $del->bind_param('i',$id);
         if ($del->execute()) js(['status'=>'success']);
         else js(['status'=>'error','error'=>$conn->error]);
@@ -41,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     if ($action === 'approve'){
         // fetch applicant
-        $stmt = $conn->prepare("SELECT * FROM applicants WHERE id = ? AND status='pending'");
+        // applicants table uses applicant_id as primary key
+        $stmt = $conn->prepare("SELECT * FROM applicants WHERE applicant_id = ? AND status='pending'");
         $stmt->bind_param('i',$id);
         $stmt->execute();
         $res = $stmt->get_result();

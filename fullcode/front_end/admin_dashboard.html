@@ -19,10 +19,91 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
   <!-- Chart.js for charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    /* Stat Cards Styling */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      padding: 25px 15px;
+      border-radius: 8px;
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-decoration: none;
+      display: block;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      min-height: 100px;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      filter: brightness(1.1);
+    }
+    
+    .stat-card.renewal {
+      background: #1e40af;
+    }
+    
+    .stat-card.renewal:hover {
+      background: #2952d4;
+    }
+    
+    .stat-card.approved {
+      background: #0084ff;
+    }
+    
+    .stat-card.approved:hover {
+      background: #1a94ff;
+    }
+    
+    .stat-card.pending {
+      background: #60a5fa;
+    }
+    
+    .stat-card.pending:hover {
+      background: #7bb3fb;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    
+    .stat-number {
+      font-size: 48px;
+      font-weight: 700;
+      margin: 0;
+    }
+
     /* Ensure chart canvases are visible and sized */
     .panel-body { position: relative; min-height: 260px; }
     .panel-body canvas { width: 100% !important; height: 240px !important; display: block; }
     .debug { color: #b00020; font-size: 13px; margin-top: 8px; }
+    
+    /* Hide topbar and footer */
+    .topbar { display: none; }
+    .footer { display: none; }
+    
+    /* Lighten sidebar icons */
+    .sidebar .nav-item img,
+    .sidebar .dropdown-btn img {
+      filter: brightness(0.8);
+      opacity: 0.85;
+    }
+    
+    .sidebar .nav-item:hover img,
+    .sidebar .dropdown-btn:hover img {
+      filter: brightness(1);
+      opacity: 1;
+    }
   </style>
 </head>
 
@@ -47,16 +128,23 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
           </button>
           
           <div class="dropdown-content">
-          <a href="system_account.html" class="nav-item"><img src="../icon/account.png" class="ico"> System Account</a> 
+          <a href="system_account.html" class="nav-item">System Account</a> 
             <a href="pending_accounts.html">Pending Applications</a>
           </div>
         </div>
-        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/calendar.png" class="ico"> Set Schedule</a>
+        <a href="renewal_requests.html" class="nav-item"><img src="../icon/renewal.png" class="ico"> Renewal Requests</a>
         <a href="logout.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
       </nav>
 
       <div class="sidebar-footer">
-        <small>v1.0 • Prototype</small>
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">S</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Admin</div>
+            <div class="user-role">Administrator</div>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -64,25 +152,29 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
 
        <header class="topbar">
         <div class="top-actions">
-          <div class="admin">
-            <img class="avatar" src="../icon/user.png" alt="avatar">
-            <span class="admin-name" id="adminName"></span>
-          </div>
         </div>
       </header>
 
       <section class="content">
         <h2 class="page-title">DASHBOARD</h2>
 
-        <div class="card-row">
-          <div class="card small card-approval">
-            <img src="../icon/approved.png" class="card-icon">
-            <div class="card-info">
-              <div class="count" id="approvedCount"></div>
-              <div class="label">Approved Registration</div>
-              <a class="view-link" href="system_account.html">View Details</a>
-            </div>
-          </div>
+        <div class="stats-container">
+          <a href="renewal_requests.html" class="stat-card renewal">
+            <div class="stat-label">Renewal Requests</div>
+            <div class="stat-number" id="renewalRequestCount">0</div>
+          </a>
+          
+          <a href="system_account.html" class="stat-card approved">
+            <div class="stat-label">Total Applicants</div>
+            <div class="stat-number" id="approvedCount">0</div>
+          </a>
+          
+          <a href="pending_accounts.html" class="stat-card pending">
+            <div class="stat-label">Pending</div>
+            <div class="stat-number" id="pendingCount">0</div>
+          </a>
+
+          
         </div>
 
         <div class="grid-2">
@@ -102,7 +194,7 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
           </section>
         </div>
 
-      </section>
+        </div>     
 
       <footer class="footer">
         © <span id="year"></span> EduGrants — UI Prototype
@@ -131,7 +223,16 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
           if (dbg) { dbg.style.display = 'block'; dbg.innerText = 'get_user raw response (not JSON):\n' + text.substring(0, 2000); }
           return;
         }
-        if (data && data.name) document.getElementById("adminName").innerText = data.name;
+        if (data && data.name) {
+          const firstLetter = data.name.charAt(0).toUpperCase();
+          
+          // Update sidebar only
+          const userNameEl = document.getElementById("userName");
+          const userAvatarEl = document.getElementById("userAvatar");
+          
+          if (userNameEl) userNameEl.innerText = data.name;
+          if (userAvatarEl) userAvatarEl.innerText = firstLetter;
+        }
       })
       .catch(err => {
         console.error('Failed to load admin name', err);
@@ -224,18 +325,29 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
           return;
         }
 
-        // Approved count
+        // Update stat cards
         document.getElementById("approvedCount").innerText = data.approved ?? 0;
+        document.getElementById("pendingCount").innerText = data.pending ?? 0;
 
-        // Barangay data -> bar chart
-        const barangay = data.barangay_data || [];
-        const barangayLabels = barangay.map(r => r.barangay || 'Unknown');
-        const barangayValues = barangay.map(r => parseInt(r.count || 0));
-        renderOrUpdateChart('barangayCanvas', barangayLabels, barangayValues, 'bar', { plugins: { legend: { display: false } } });
+        // Fetch renewal requests count
+        fetch("../backend/get_renewals.php")
+          .then(res => res.json())
+          .then(renewalData => {
+            document.getElementById("renewalRequestCount").innerText = renewalData.total ?? 0;
+          })
+          .catch(err => console.error("Failed to load renewal data:", err));
 
-        // Second panel: show Tally per Barangay as a doughnut (donut) chart using blue palette
-        // Use the same barangay data for a doughnut representation
-        renderOrUpdateChart('districtCanvas', barangayLabels, barangayValues, 'doughnut', { plugins: { legend: { display: true, position: 'bottom' } }, cutout: '50%', palette: 'blue' });
+        // Address data -> bar chart (Barangay Applicants)
+        const addressData = data.address_data || [];
+        const addressLabels = addressData.map(r => r.address || 'Unknown');
+        const addressValues = addressData.map(r => r.count || 0);
+        renderOrUpdateChart('barangayCanvas', addressLabels, addressValues, 'bar', { plugins: { legend: { display: false } } });
+
+        // Course data -> doughnut chart (Tally Per Course)
+        const courseData = data.course_data || [];
+        const courseLabels = courseData.map(r => r.course || 'Unknown');
+        const courseValues = courseData.map(r => r.count || 0);
+        renderOrUpdateChart('districtCanvas', courseLabels, courseValues, 'doughnut', { plugins: { legend: { display: true, position: 'bottom' } }, cutout: '50%', palette: 'blue' });
       })
       .catch(err => {
         console.error('Failed to load dashboard data', err);

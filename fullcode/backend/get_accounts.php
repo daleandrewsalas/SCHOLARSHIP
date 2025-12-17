@@ -1,20 +1,27 @@
 <?php
 require 'db_connect.php';
 
-// Fetch APPROVED accounts from system_accounts table
+// Fetch approved users from personal_information table
 $sql = "SELECT 
-          account_id as id,
-          '' as picture,
-          lastname,
+          id,
           firstname,
+          lastname,
           middlename,
-          email,
-          '' as barangay
-        FROM system_accounts
-        WHERE status = 'active'
+          gender,
+          course,
+          '' as picture
+        FROM personal_information
         ORDER BY lastname ASC";
 
 $result = $conn->query($sql);
+
+if (!$result) {
+    echo json_encode([
+        "error" => "Query failed: " . $conn->error,
+        "accounts" => []
+    ]);
+    exit;
+}
 
 $rows = [];
 
@@ -41,6 +48,7 @@ while ($row = $result->fetch_assoc()) {
 }
 
 echo json_encode([
-    "accounts" => $rows
+    "accounts" => $rows,
+    "total" => count($rows)
 ]);
 ?>

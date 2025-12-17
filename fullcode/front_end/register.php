@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../backend/db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $firstname = trim($_POST["firstname"]);
@@ -33,15 +34,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // If no errors, register the user
     if (empty($errors)) {
-        // In a real application, you would:
-        // 1. Hash the password: $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        // 2. Save to database with firstname, lastname, email, and hashed password
+        // Check if email already exists using MySQLi (check both users and registration tables)
+        $checkStmt = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
+        if (!$checkStmt) {
+            die("Prepare failed: " . $conn->error);
+        }
         
-        // For now, we'll simulate successful registration
-        $_SESSION["registration_success"] = true;
-        $_SESSION["registered_email"] = $email;
-        header("Location: login.php");
-        exit;
+        $checkStmt->bind_param("s", $email);
+        if (!$checkStmt->execute()) {
+            die("Execute failed: " . $conn->error);
+        }
+        
+        $checkResult = $checkStmt->get_result();
+        
+        if ($checkResult->num_rows > 0) {
+            $errors[] = "Email already registered!";
+        } else {
+            // Hash the password
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            
+            // Insert into users table using MySQLi
+            $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)");
+            if (!$stmt) {
+                die("Prepare failed: " . $conn->error);
+            }
+            
+            $stmt->bind_param("ssss", $firstname, $lastname, $email, $hashed_password);
+            
+            if ($stmt->execute()) {
+                $_SESSION["registration_success"] = true;
+                $_SESSION["registered_email"] = $email;
+                header("Location: login.php");
+                exit;
+            } else {
+                $errors[] = "Registration failed. Please try again.";
+            }
+        }
     }
 }
 ?>
@@ -52,7 +80,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EduGrants - Register</title>
-  <link rel="stylesheet" href="register.css" />
+  <link rel="stylesheet" href="../css/register.css" />
+  <link rel="stylesheet" href="../css/fonts.css" />
 </head>
 
 <body class="register-body">

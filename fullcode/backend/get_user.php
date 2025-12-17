@@ -7,30 +7,43 @@ ob_start();
 session_start();
 include 'db_connect.php';
 
-$admin_id = $_SESSION['user_id'] ?? null; // Use the correct session key
-$name = 'Admin';
+$name = 'User';
+$user_id = $_SESSION['user_id'] ?? null;
+$role = $_SESSION['role'] ?? null;
 
-if ($admin_id !== null) {
+// Determine which table to query based on role
+if ($user_id !== null) {
     try {
-        // Fetch user data based on the stored session ID
-        $stmt = $conn->prepare("SELECT fullname FROM admins WHERE id = ?");
-        if ($stmt) {
-            $stmt->bind_param("i", $admin_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $data = $result->fetch_assoc();
-            
-            // Use fullname if available
-            if (!empty($data['fullname'])) {
-                $name = $data['fullname'];
+        if ($role === 'admin') {
+            $stmt = $conn->prepare("SELECT fullname FROM admins WHERE id = ? LIMIT 1");
+            if ($stmt) {
+                $stmt->bind_param('i', $user_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $data = $result->fetch_assoc();
+                if (!empty($data['fullname'])) $name = $data['fullname'];
+            }
+        } else {
+            // Assume regular user/applicant
+            $stmt = $conn->prepare("SELECT first_name, last_name FROM users WHERE user_id = ? LIMIT 1");
+            if ($stmt) {
+                $stmt->bind_param('i', $user_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $data = $result->fetch_assoc();
+                if ($data) {
+                    $fname = trim($data['first_name'] ?? '');
+                    $lname = trim($data['last_name'] ?? '');
+                    $full = trim($fname . ' ' . $lname);
+                    if ($full !== '') $name = $full;
+                }
             }
         }
     } catch (Exception $e) {
-        // ignore and return default 'Admin'
+        // ignore errors and fall back to default
     }
 }
 
 @ob_end_clean();
-// Return the name found or the default 'Admin'
 echo json_encode(['name' => $name]);
 ?>

@@ -18,6 +18,21 @@ try {
         throw new Exception('Invalid schedule date or total slots');
     }
 
+    // Auto-create `schedules` table if missing
+    $tableCheck = $conn->query("SHOW TABLES LIKE 'schedules'");
+    if (!$tableCheck || $tableCheck->num_rows === 0) {
+        $createTable = "CREATE TABLE schedules (
+            schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+            schedule_date DATE NOT NULL UNIQUE,
+            total_slots INT NOT NULL,
+            remaining_slots INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )";
+        if (!$conn->query($createTable)) {
+            throw new Exception('Failed to create schedules table: ' . $conn->error);
+        }
+    }
+
     // Use `schedules` table created by setup_database.php
     $remaining_slots = $total_slots;
 

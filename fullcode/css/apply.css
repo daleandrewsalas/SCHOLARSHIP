@@ -1,13 +1,430 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* Apply Scholarship Form Styles - Clean Version */
+
+/* Form Section Visibility */
+.form-section {
+  display: none !important;
 }
 
-body {
-    font-family: 'Poppins';
-    background-color: #f5f5f5;
+.form-section.active {
+  display: block !important;
 }
+
+.section-title {
+  margin-bottom: 25px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Steps */
+.steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.step {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  opacity: 1;
+  color: #e74c3c;
+}
+
+.step-icon {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 10px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.step.active .step-icon {
+  background: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.step-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.step.active .step-icon svg {
+  fill: white;
+}
+
+.step-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+}
+
+.step.active .step-text {
+  color: #e74c3c;
+}
+
+/* Form Styles */
+.scholarship-form {
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #e74c3c;
+  box-shadow: 0 0 5px rgba(231, 76, 60, 0.2);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Radio Group */
+.radio-group {
+  display: flex;
+  gap: 20px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.radio-label input {
+  cursor: pointer;
+}
+
+/* Subsection */
+.subsection-title {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Voter Group */
+.voter-group {
+  margin-bottom: 15px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.voter-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 14px;
+}
+
+.radio-group-inline {
+  display: flex;
+  gap: 20px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* Family Rows */
+.family-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.family-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.family-col-small {
+  display: flex;
+  flex-direction: column;
+}
+
+.family-col-full {
+  display: flex;
+  flex-direction: column;
+  grid-column: 1 / -1;
+}
+
+.family-col label,
+.family-col-small label,
+.family-col-full label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.family-col input,
+.family-col-small input,
+.family-col-full input {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.family-col input:focus,
+.family-col-small input:focus,
+.family-col-full input:focus {
+  outline: none;
+  border-color: #e74c3c;
+  box-shadow: 0 0 5px rgba(231, 76, 60, 0.2);
+}
+
+/* Upload Styles */
+.upload-item {
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.upload-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.upload-label {
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.upload-header input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.file-upload-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.file-upload-btn {
+  padding: 8px 16px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+  transition: background 0.3s ease;
+}
+
+.file-upload-btn:hover {
+  background: #c0392b;
+}
+
+.file-upload-wrapper input[type="file"] {
+  display: none;
+}
+
+.file-name {
+  color: #666;
+  font-size: 13px;
+}
+
+.upload-description {
+  color: #999;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+/* Appointment Styles */
+.appointment-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.appointment-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.appointment-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.appointment-col label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.appointment-col input,
+.appointment-col select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+/* Buttons */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.btn-submit,
+.btn-next,
+.btn-finish {
+  padding: 12px 30px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-submit:hover,
+.btn-next:hover,
+.btn-finish:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-prev,
+.btn-back {
+  padding: 12px 30px;
+  background: #95a5a6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-prev:hover,
+.btn-back:hover {
+  background: #7f8c8d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .steps {
+    flex-direction: column;
+  }
+
+  .step {
+    min-width: auto;
+  }
+
+  .form-row,
+  .family-row,
+  .appointment-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-submit,
+  .btn-next,
+  .btn-prev,
+  .btn-back,
+  .btn-finish {
+    width: 100%;
+  }
+
+  .radio-group,
+  .radio-group-inline {
+    flex-direction: column;
+  }
+}
+
 
 .container {
     display: flex;
@@ -443,7 +860,7 @@ body {
 /* Step Text */
 .step-text {
     font-size: 13px;
-    color: #888;
+    color: #ffffff;
     text-align: center;
     font-weight: 500;
     transition: color 0.3s ease;
@@ -501,6 +918,38 @@ body {
 }
 
 /* Form Sections */
+
+/* Make form content take more horizontal space on apply page */
+.content-area.apply-page {
+    padding: 18px 28px;
+}
+
+.content-area.apply-page .steps {
+    padding: 18px;
+    max-width: 100%;
+}
+
+.content-area.apply-page .scholarship-form,
+.content-area.apply-page .form-section,
+.content-area.apply-page .steps {
+    width: 100%;
+    max-width: none;
+}
+
+.content-area.apply-page .form-row {
+    gap: 24px;
+}
+
+/* reduce unnecessary left gutter inside form cards */
+.content-area.apply-page {
+    margin-left: 0;
+}
+
+/* ensure section title text is white when using the blue header from admin styles */
+.content-area.apply-page .section-title {
+    color: #fff !important;
+}
+
 .form-section {
     display: none;
     background-color: white;

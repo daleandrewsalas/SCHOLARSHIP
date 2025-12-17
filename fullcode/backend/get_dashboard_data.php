@@ -10,49 +10,58 @@ ob_start();
 include 'db_connect.php';
 
 $approvedCount = 0;
-$barangayData = [];
-$districtData = [];
+$addressData = [];
+$courseData = [];
+$pendingCount = 0;
 
 try {
-    // Count approved scholars from system_accounts (only active accounts)
-    $approved = $conn->query("SELECT COUNT(*) as total FROM system_accounts WHERE status = 'active'");
+    // Count approved scholars from users table
+    $approved = $conn->query("SELECT COUNT(*) as total FROM users");
     if ($approved) {
         $row = $approved->fetch_assoc();
         $approvedCount = isset($row['total']) ? (int)$row['total'] : 0;
     }
 
-    // Barangay chart - count approved scholars by barangay by joining system_accounts -> users -> applicants -> residency_information
-    $result = $conn->query("\
+    // Count pending applications (if applicants table exists)
+    $pending = $conn->query("SELECT COUNT(*) as total FROM applicants WHERE status = 'pending'");
+    if ($pending) {
+        $row = $pending->fetch_assoc();
+        $pendingCount = isset($row['total']) ? (int)$row['total'] : 0;
+    }
+
+    // Fetch permanent_address data from residency_information (for bar chart)
+    $result = $conn->query("
         SELECT 
-            COALESCE(ri.permanent_address, 'Unknown') as barangay, 
+            COALESCE(permanent_address, 'Unknown') as address, 
             COUNT(*) as count 
-        FROM system_accounts sa
-        LEFT JOIN users u ON u.email = sa.email
-        LEFT JOIN applicants a ON a.applicant_id = u.applicant_id
-        LEFT JOIN residency_information ri ON a.applicant_id = ri.applicant_id
-        WHERE sa.status = 'active'
-        GROUP BY barangay
+        FROM residency_information
+        GROUP BY address
         ORDER BY count DESC
     ");
     if ($result) {
         while ($row = $result->fetch_assoc()) {
-            $barangayData[] = $row;
+            $addressData[] = [
+                'address' => $row['address'],
+                'count' => (int)$row['count']
+            ];
         }
     }
 
-    // If no barangay data from residency, try to use applicant count by status
-    if (empty($barangayData)) {
-        $result = $conn->query("
-            SELECT 
-                a.status as barangay, 
-                COUNT(*) as count 
-            FROM applicants a
-            GROUP BY a.status
-        ");
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $barangayData[] = $row;
-            }
+    // Fetch course data from personal_information (for doughnut chart)
+    $courseResult = $conn->query("
+        SELECT 
+            COALESCE(course, 'Unknown') as course, 
+            COUNT(*) as count 
+        FROM personal_information
+        GROUP BY course
+        ORDER BY count DESC
+    ");
+    if ($courseResult) {
+        while ($row = $courseResult->fetch_assoc()) {
+            $courseData[] = [
+                'course' => $row['course'],
+                'count' => (int)$row['count']
+            ];
         }
     }
 } catch (Exception $e) {
@@ -64,7 +73,8 @@ try {
 
 echo json_encode([
     'approved' => $approvedCount,
-    'barangay_data' => $barangayData,
-    'district_data' => $barangayData  // use same data for second chart
+    'pending' => $pendingCount,
+    'address_data' => $addressData,
+    'course_data' => $courseData
 ]);
 ?>

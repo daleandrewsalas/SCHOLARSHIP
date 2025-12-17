@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../backend/db_connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);
@@ -7,12 +8,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "Please enter a valid email address!";
     } else {
-        if ($email === "example1@gmail.com") {
-            
-            $_SESSION["reset_email_sent"] = true;
-            $success = "Password reset link has been sent to your email!";
-        } else {
-            $error = "This email is not registered in our system!";
+        try {
+            // Check if email exists in users table
+            $stmt = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
+            if ($stmt) {
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $stmt->close();
+                
+                if ($result->num_rows > 0) {
+                    $_SESSION["reset_email_sent"] = true;
+                    $_SESSION["reset_email"] = $email;
+                    $success = "Email verified! You will be redirected to reset your password.";
+                    // Redirect after 2 seconds
+                    header("refresh:2;url=reset_password.php");
+                } else {
+                    $error = "This email is not registered in our system!";
+                }
+            } else {
+                $error = "Database error. Please try again later.";
+            }
+        } catch (Exception $e) {
+            $error = "An error occurred. Please try again.";
         }
     }
 }
@@ -24,7 +42,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EduGrants - Forgot Password</title>
-  <link rel="stylesheet" href="forgotpass.css" />
+  <link rel="stylesheet" href="../css/forgotpass.css" />
+  <link rel="stylesheet" href="../css/fonts.css" />
 </head>
 
 <body class="forgot-body">

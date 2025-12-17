@@ -1,0 +1,344 @@
+[2025-12-17 02:26:37] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:10] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:13] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:15] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:16] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:16] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:16] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:17] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:17] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:28:39] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:30:49] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:31:16] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+
+[2025-12-17 02:32:17] User not logged in on submit_renewal
+Session ID: 23vi3q8udmsrrdgd9er3ffe5vh
+$_SESSION: Array
+(
+    [logged_in] => 1
+    [user_id] => 1
+    [email] => 
+    [role] => admin
+    [fullname] => Test
+    [renewal_status] => Array
+        (
+            [success] => 
+            [message] => User not logged in
+        )
+
+)
+
+\
+    COOKIE: Array
+(
+    [PHPSESSID] => 23vi3q8udmsrrdgd9er3ffe5vh
+)
+
+\
+    SERVER: Array
+(
+    [HTTP_HOST] => localhost
+    [HTTP_USER_AGENT] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+    [REMOTE_ADDR] => ::1
+    [REQUEST_URI] => /SCHOLARSHIP/fullcode/backend/submit_renewal.php
+)
+

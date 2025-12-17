@@ -7,6 +7,21 @@ ob_start();
 include 'db_connect.php';
 
 try {
+    // Auto-create `schedules` table if missing
+    $tableCheck = $conn->query("SHOW TABLES LIKE 'schedules'");
+    if (!$tableCheck || $tableCheck->num_rows === 0) {
+        $createTable = "CREATE TABLE schedules (
+            schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+            schedule_date DATE NOT NULL UNIQUE,
+            total_slots INT NOT NULL,
+            remaining_slots INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )";
+        if (!$conn->query($createTable)) {
+            throw new Exception('Failed to create schedules table: ' . $conn->error);
+        }
+    }
+
     // Query existing schedules table
     $result = $conn->query("SELECT schedule_date as date, total_slots as total, remaining_slots as remaining FROM schedules ORDER BY schedule_date DESC");
     

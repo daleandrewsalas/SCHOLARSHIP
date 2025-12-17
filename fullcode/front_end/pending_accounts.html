@@ -65,6 +65,19 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
       padding:8px;
       margin-bottom:10px;
     }
+    
+    /* Lighten sidebar icons */
+    .sidebar .nav-item img,
+    .sidebar .dropdown-btn img {
+      filter: brightness(0.8);
+      opacity: 0.85;
+    }
+    
+    .sidebar .nav-item:hover img,
+    .sidebar .dropdown-btn:hover img {
+      filter: brightness(1);
+      opacity: 1;
+    }
   </style>
 </head>
 
@@ -90,27 +103,29 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
           </button>
           
            <div class="dropdown-content">
-                    <a href="system_account.html" class="nav-item"><img src="../icon/account.png" class="ico"> System Account</a>
+                    <a href="system_account.html" class="nav-item">System Account</a>
                     <a href="pending_accounts.html">Pending Applications</a>
                 </div>
         </div>
 
-        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
-        <a href="login.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/calendar.png" class="ico"> Set Schedule</a>
+        <a href="renewal_requests.html" class="nav-item"><img src="../icon/renewal.png" class="ico"> Renewal Requests</a>
+        <a href="logout.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
       </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">S</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Admin</div>
+            <div class="user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
   </aside>
 
   <!-- MAIN -->
   <main class="main">
-
-    <header class="topbar">
-      <div class="top-actions">
-        <div class="admin">
-          <img class="avatar" src="../icon/user.png" alt="avatar">
-          <span class="admin-name" id="adminName">Admin</span>
-        </div>
-      </div>
-    </header>
     <section class="content">
       <h2 class="page-title">PENDING ACCOUNTS</h2>
       
@@ -169,10 +184,27 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
 // LOAD ADMIN NAME
 function loadAdminName() {
   fetch("../backend/get_user.php")
-    .then(res => res.json())
-    .then(data => {
+    .then(res => {
+      if (!res.ok) throw new Error('Status ' + res.status);
+      return res.text();
+    })
+    .then(text => {
+      let data = null;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('Failed to parse get_user JSON. Raw response:', text);
+        return;
+      }
       if (data && data.name) {
-        document.getElementById("adminName").innerText = data.name;
+        const firstLetter = data.name.charAt(0).toUpperCase();
+        
+        // Update sidebar
+        const userNameEl = document.getElementById("userName");
+        const userAvatarEl = document.getElementById("userAvatar");
+        
+        if (userNameEl) userNameEl.innerText = data.name;
+        if (userAvatarEl) userAvatarEl.innerText = firstLetter;
       }
     })
     .catch(err => console.error("Failed to load admin name", err));
@@ -238,7 +270,10 @@ function loadPendingApplicants() {
             <td>${dob}</td>
             <td>${row.gender || 'N/A'}</td>
             <td>${row.email || 'N/A'}</td>
-            <td><button class="approve-btn" data-id="${row.applicant_id}" style="padding:6px 12px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;">Approve</button></td>
+            <td>
+              <button class="approve-btn" data-id="${row.applicant_id}" style="padding:6px 12px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;margin-right:8px;">Approve</button>
+              <button class="decline-btn" data-id="${row.applicant_id}" style="padding:6px 12px;background:#ef4444;color:white;border:none;border-radius:4px;cursor:pointer;">Decline</button>
+            </td>
           </tr>
         `;
       });
@@ -267,6 +302,31 @@ function loadPendingApplicants() {
             console.error(err);
             alert('Request failed'); 
           });
+        });
+      });
+      // Attach decline handlers
+      document.querySelectorAll('.decline-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          if (!confirm('Decline applicant #' + id + '? This will remove the pending application.')) return;
+
+          fetch('../backend/pending_accounts.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'action=reject&id=' + encodeURIComponent(id)
+          })
+          .then(res => res.text())
+          .then(text => {
+            let resp;
+            try { resp = JSON.parse(text); } catch(e) { console.error('Invalid JSON:', text); alert('Server error: ' + text); return; }
+            if (resp.status === 'success') {
+              alert('Applicant declined');
+              loadPendingApplicants();
+            } else {
+              alert('Error: ' + (resp.error || resp.message || 'Unknown error'));
+            }
+          })
+          .catch(err => { console.error(err); alert('Request failed'); });
         });
       });
     })

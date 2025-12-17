@@ -34,7 +34,7 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
         <a href="admin_profile.html" class="nav-item"><img src="../icon/admin.png" class="ico"> Admin Profile</a>
         
         <div class="nav-item dropdown">
-          <button class="dropdown-btn">
+          <button type="button" class="dropdown-btn">
             <img src="../icon/apply.png" class="ico"> Student Registration
             <span class="arrow">▸</span>
           </button>
@@ -44,40 +44,24 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
             <a href="pending_accounts.html">Pending Applications</a>
           </div>
         </div>
-        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
-        <a href="login_admin.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/calendar.png" class="ico"> Set Schedule</a>
+        <a href="renewal_requests.html" class="nav-item"><img src="../icon/renewal.png" class="ico"> Renewal Requests</a>
+        <a href="logout.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
       </nav>
 
       <div class="sidebar-footer">
-        <small>v1.0 • Prototype</small>
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">S</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Admin</div>
+            <div class="user-role">Administrator</div>
+          </div>
+        </div>
       </div>
     </aside>
 
     <!-- MAIN -->
     <main class="main">
-
-      <!-- TOPBAR -->
-      <header class="topbar">
-        <div class="top-actions">
-
-          <div class="notif-wrapper">
-            <button class="notif-btn" id="notifBtn">
-              <img src="../icon/notification.png" class="notif-icon">
-              <span class="notif-badge" style="display:none;"></span>
-            </button>
-
-            <div class="notif-dropdown" id="notifDropdown" style="display:none;">
-              <div class="notif-header">Notifications</div>
-              <ul class="notif-list" id="notifList"></ul>
-            </div>
-          </div>
-
-          <div class="admin">
-            <img class="avatar" src="../icon/user.png" alt="avatar">
-            <span class="admin-name" id="adminName">Admin</span>
-          </div>
-        </div>
-      </header>
 
       <!-- CONTENT -->
       <section class="content">
@@ -97,8 +81,8 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
                 <th>LASTNAME</th>
                 <th>FIRSTNAME</th>
                 <th>MIDDLENAME</th>
-                <th>EMAIL</th>
-                <th>BARANGAY</th>
+                <th>GENDER</th>
+                <th>COURSE</th>
               </tr>
             </thead>
             <tbody id="accountsBody">
@@ -115,21 +99,47 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
   <!-- JAVASCRIPT -->
   <script>
 
-    // ✅ TOGGLE NOTIFICATION DROPDOWN
-    document.getElementById("notifBtn").addEventListener("click", function () {
-      const dropdown = document.getElementById("notifDropdown");
-      dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-    });
-
-    // ✅ LOAD ADMIN NAME
+    // ✅ LOAD ADMIN NAME (with error handling)
     function loadAdminName() {
       fetch("../backend/get_user.php")
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("adminName").innerText = data.name;
-        })
-        .catch(err => console.error("USER JSON ERROR:", err));
+      .then(res => {
+        if (!res.ok) throw new Error('Status ' + res.status);
+        return res.text();
+      })
+      .then(text => {
+        let data = null;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error('Failed to parse get_user JSON. Raw response:', text);
+          return;
+        }
+        if (data && data.name) {
+          const firstLetter = data.name.charAt(0).toUpperCase();
+          
+          // Update sidebar
+          const userNameEl = document.getElementById("userName");
+          const userAvatarEl = document.getElementById("userAvatar");
+          
+          if (userNameEl) userNameEl.innerText = data.name;
+          if (userAvatarEl) userAvatarEl.innerText = firstLetter;
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load admin name', err);
+      });
     }
+
+    // ✅ TOGGLE NOTIFICATION DROPDOWN (guarded)
+    const notifBtnEl = document.getElementById("notifBtn");
+    if (notifBtnEl) {
+      notifBtnEl.addEventListener("click", function () {
+        const dropdown = document.getElementById("notifDropdown");
+        if (dropdown) dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+      });
+    }
+
+    
 
     // ✅ LOAD NOTIFICATIONS
     function loadNotifications() {
@@ -189,8 +199,8 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
                 <td>${acc.lastname}</td>
                 <td>${acc.firstname}</td>
                 <td>${acc.middlename}</td>
-                <td>${acc.email}</td>
-                <td>${acc.barangay}</td>
+                <td>${acc.gender}</td>
+                <td>${acc.course}</td>
               </tr>
             `;
             tbody.innerHTML += row;
@@ -216,14 +226,16 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
 
     // ✅ AUTO REFRESH NOTIFICATIONS
     setInterval(loadNotifications, 3000);
-    document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
-    const btn = dropdownItem.querySelector(".dropdown-btn");
-    if (btn) {
-        btn.addEventListener("click", () => {
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
+        const btn = dropdownItem.querySelector(".dropdown-btn");
+        if (btn) {
+          btn.addEventListener("click", () => {
             dropdownItem.classList.toggle("active");
-        });
-    }
-});
+          });
+        }
+      });
+    });
   </script>
 
 </body>

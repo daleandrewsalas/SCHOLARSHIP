@@ -34,17 +34,17 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
         <a href="admin_profile.html" class="nav-item"><img src="../icon/admin.png" class="ico"> Admin Profile</a>
         
         <div class="nav-item dropdown">
-          <button class="dropdown-btn">
+          <button type="button" class="dropdown-btn">
             <img src="../icon/apply.png" class="ico"> Student Registration
             <span class="arrow">▸</span>
           </button>
           
           <div class="dropdown-content">
-            <a href="system_account.html" class="nav-item"><img src="../icon/account.png" class="ico"> System Account</a>
+            <a href="system_account.html" class="nav-item">System Account</a>
             <a href="pending_accounts.html">Pending Applications</a>
           </div>
         </div>
-        <a href="set_schedule.html" class="nav-item"><img src="../icon/schedule.png" class="ico"> Set Schedule</a> 
+        <a href="set_schedule.html" class="nav-item"><img src="../icon/calendar.png" class="ico"> Set Schedule</a> 
         <a href="login_admin.php" class="nav-item"><img src="../icon/logout.png" class="ico"> Log out</a>
       </nav>
 
@@ -72,30 +72,34 @@ if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
 
   <!-- JAVASCRIPT -->
   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // ✅ LOAD ADMIN NAME
+      function loadAdminName() {
+        fetch("../backend/get_user.php")
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById("adminName").innerText = data.name;
+          })
+          .catch(err => console.error("USER JSON ERROR:", err));
+      }
 
-    // ✅ LOAD ADMIN NAME
-    function loadAdminName() {
-      fetch("../backend/get_user.php")
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("adminName").innerText = data.name;
-        })
-        .catch(err => console.error("USER JSON ERROR:", err));
-    }
+      // ✅ INITIAL LOAD
+      loadAdminName();
 
-    // ✅ INITIAL LOAD
-    loadAdminName();
+      // ✅ AUTO REFRESH ADMIN NAME
+      setInterval(loadAdminName, 3000);
 
-    // ✅ AUTO REFRESH ADMIN NAME
-    setInterval(loadAdminName, 3000);
-    document.querySelectorAll(".nav-item.dropdown").forEach(dropdownItem => {
-    const btn = dropdownItem.querySelector(".dropdown-btn");
-    if (btn) {
-        btn.addEventListener("click", () => {
-            dropdownItem.classList.toggle("active");
-        });
-    }
-});
+      // Attach dropdown handlers
+      document.querySelectorAll('.nav-item.dropdown').forEach(function (dropdownItem) {
+        var btn = dropdownItem.querySelector('.dropdown-btn');
+        if (btn) {
+          btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            dropdownItem.classList.toggle('active');
+          });
+        }
+      });
+    });
   </script>
 
 </body>
